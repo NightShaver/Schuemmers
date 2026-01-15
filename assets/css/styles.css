@@ -103,13 +103,13 @@ header{
   transition: background .2s var(--ease), color .2s var(--ease);
 }
 .navLinks a:hover{background:#eef5ff; color:var(--blue-950)}
-.navRight{display:flex; align-items:center; gap:10px; min-width: 280px; justify-content:flex-end}
+.navRight{display:flex; align-items:center; gap:14px; flex-wrap: nowrap;}
 .phone{
-  display:inline-flex; align-items:center; gap:10px;
-  font-weight:1000; color:var(--blue-950);
-  padding:10px 12px; border-radius:999px;
-  background:#eef5ff;
-  border:1px solid #d7e7ff;
+  display:inline-flex;       /* macht Icon + Text nebeneinander */
+  align-items:center;        /* vertikal mittig */
+  gap:8px;                   /* Abstand Icon ↔ Nummer */
+  white-space:nowrap;        /* verhindert Zeilenumbruch in der Nummer */
+  font-weight:700;
 }
 .menuBtn{display:none}
 
