@@ -1,0 +1,129 @@
+---
+import { container, type Container } from '~/lib/daten/container';
+
+interface Props {
+  behaelter: Container;
+  /** Hervorgehoben, etwa wenn die Karte ausgewählt ist. */
+  hervor?: boolean;
+  /** Menschsilhouette als Größenvergleich. */
+  mitMensch?: boolean;
+  class?: string;
+}
+
+const { behaelter, hervor = false, mitMensch = true, class: extraKlasse = '' } = Astro.props;
+
+/**
+ * Maßstabsgetreue Seitenansicht.
+ *
+ * Gezeichnet wird direkt in Millimetern, das Koordinatensystem ist für
+ * alle Container identisch. Dadurch sind die Bilder untereinander
+ * vergleichbar: eine 1,8er Mulde ist neben einem 40er Abrollcontainer
+ * wirklich so klein, wie sie in Wirklichkeit ist.
+ *
+ * Die Person ist 1750 mm groß und liefert den Bezug, den nackte
+ * Millimeterangaben nicht geben.
+ */
+const MENSCH_HOEHE = 1750;
+const MENSCH_BREITE = 520;
+const LUFT = 260;
+
+const maxLaenge = Math.max(...container.map((c) => c.tiefe));
+const maxHoehe = Math.max(...container.map((c) => c.hoehe), MENSCH_HOEHE);
+
+const menschPlatz = mitMensch ? MENSCH_BREITE + LUFT : 0;
+const breite = maxLaenge + menschPlatz + LUFT;
+const hoehe = maxHoehe + 220;
+const boden = maxHoehe + 90;
+
+const L = behaelter.tiefe;
+const H = behaelter.hoehe;
+const oben = boden - H;
+
+// Absetzmulden laufen nach oben auseinander, Abrollcontainer sind kastenförmig.
+const schraege = behaelter.bauart === 'absetz' ? Math.min(L * 0.13, H * 0.7) : Math.min(L * 0.04, 160);
+
+const koerper =
+  behaelter.bauart === 'absetz'
+    ? `M0 ${oben} H${L} L${L - schraege} ${boden} H${schraege} Z`
+    : `M0 ${oben} H${L} V${boden} H${schraege} L0 ${boden - schraege} Z`;
+
+// Figur aus wenigen Grundformen: Kopf, Rumpf, Arme, Beine. Reicht, um den
+// Maßstab zu begreifen, und bleibt auch klein gerendert erkennbar.
+const mitte = maxLaenge + LUFT + MENSCH_BREITE / 2;
+const kopfR = 105;
+const kopfY = boden - MENSCH_HOEHE + kopfR;
+const schulterY = kopfY + kopfR + 55;
+const hueftY = boden - 780;
+
+const fuellung = hervor ? 'fill-signal-500' : 'fill-navy-300 dark:fill-navy-600';
+const kante = hervor ? 'stroke-signal-600' : 'stroke-navy-400 dark:stroke-navy-500';
+---
+
+<svg
+  viewBox={`0 0 ${breite} ${hoehe}`}
+  class:list={['w-full', extraKlasse]}
+  role="img"
+  aria-label={`${behaelter.volumen} Kubikmeter Container, ${(L / 1000).toLocaleString('de-DE')} Meter lang und ${(H / 1000).toLocaleString('de-DE')} Meter hoch, im Größenvergleich mit einem Menschen`}
+>
+  {/* Standlinie, auf der Container und Mensch stehen. */}
+  <line
+    x1="0"
+    y1={boden}
+    x2={breite}
+    y2={boden}
+    class="stroke-[var(--linie-stark)]"
+    stroke-width="14"
+  />
+
+  <g data-koerper class={fuellung}>
+    <path d={koerper} class:list={[kante]} stroke-width="12" stroke-linejoin="round" />
+
+    {/* Oberer Rahmen, die kräftige Kante jeder Mulde. */}
+    <rect x="0" y={oben} width={L} height={Math.min(90, H * 0.12)} class="opacity-70" />
+
+    {
+      behaelter.bauart === 'abroll' && (
+        <>
+          {/* Hecktür und Laufrollen, daran erkennt man den Abrollcontainer. */}
+          <line
+            x1={L - 130}
+            y1={oben}
+            x2={L - 130}
+            y2={boden}
+            class:list={[kante, 'opacity-60']}
+            stroke-width="10"
+          />
+          <circle cx={L - 380} cy={boden - 95} r="95" class:list={[kante, 'fill-none']} stroke-width="12" />
+          <circle cx={L - 700} cy={boden - 95} r="95" class:list={[kante, 'fill-none']} stroke-width="12" />
+        </>
+      )
+    }
+
+    {
+      behaelter.bauart === 'absetz' && (
+        /* Anschlagpunkte für die Ausleger. */
+        <>
+          <rect x={L * 0.2} y={oben - 70} width="70" height="70" class="opacity-60" />
+          <rect x={L * 0.8 - 70} y={oben - 70} width="70" height="70" class="opacity-60" />
+        </>
+      )
+    }
+  </g>
+
+  {
+    mitMensch && (
+      <g class="fill-[var(--text-leise)] opacity-60">
+        <title>Person mit 1,75 m Körpergröße als Größenvergleich</title>
+        <circle cx={mitte} cy={kopfY} r={kopfR} />
+        {/* Rumpf */}
+        <rect x={mitte - 175} y={schulterY} width="350" height={hueftY - schulterY} rx="130" />
+        {/* Arme */}
+        <rect x={mitte - 265} y={schulterY + 30} width="95" height={hueftY - schulterY - 60} rx="48" />
+        <rect x={mitte + 170} y={schulterY + 30} width="95" height={hueftY - schulterY - 60} rx="48" />
+        {/* Beine */}
+        <rect x={mitte - 155} y={hueftY - 60} width="130" height={boden - hueftY + 60} rx="60" />
+        <rect x={mitte + 25} y={hueftY - 60} width="130" height={boden - hueftY + 60} rx="60" />
+      </g>
+    )
+  }
+</svg>

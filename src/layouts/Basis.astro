@@ -1,0 +1,181 @@
+---
+import '~/styles/global.css';
+import Kopf from '~/components/Kopf.astro';
+import Fuss from '~/components/Fuss.astro';
+import { firma, adresseEinzeilig, kartenLink } from '~/lib/firma';
+import { orte } from '~/lib/daten/orte';
+import { bild } from '~/lib/bilder';
+import { getImage } from 'astro:assets';
+
+interface Props {
+  titel: string;
+  beschreibung: string;
+  /** Zusätzliche JSON-LD Objekte dieser Seite, etwa FAQPage oder Service. */
+  schema?: Record<string, unknown>[];
+  brotkrumen?: { name: string; pfad: string }[];
+  keinIndex?: boolean;
+}
+
+const { titel, beschreibung, schema = [], brotkrumen = [], keinIndex = false } = Astro.props;
+
+// Die rein statische Testfassung soll nicht in den Suchergebnissen gegen
+// die echte Seite antreten.
+const nichtIndexieren = keinIndex || process.env.SCHUEMMER_STATISCH === 'ja';
+
+const kanonisch = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', Astro.site).href;
+
+// Ein Vorschaubild für alle Seiten. Das Fuhrparkfoto transportiert die Marke
+// in Messenger und sozialen Netzwerken besser als jede Textgrafik.
+const vorschauQuelle = bild('hero', 'gelaende', 'fuhrpark');
+const vorschau = vorschauQuelle
+  ? await getImage({ src: vorschauQuelle.quelle, width: 1200, height: 630, format: 'jpg', fit: 'cover' })
+  : undefined;
+const vorschauUrl = vorschau ? new URL(vorschau.src, Astro.site).href : undefined;
+
+const betrieb = {
+  '@type': 'LocalBusiness',
+  '@id': `${Astro.site}#betrieb`,
+  name: firma.name,
+  legalName: firma.nameLang,
+  description:
+    'Containerdienst, Baustoffhandel und Recyclinganlage in Eschweiler. Entsorgungsfachbetrieb für die Städteregion Aachen und den Kreis Düren.',
+  url: Astro.site?.href,
+  telephone: firma.telefone.map((t) => t.wahl),
+  faxNumber: firma.fax,
+  email: firma.email,
+  foundingDate: String(firma.gegruendet),
+  vatID: firma.ustId.replace(/\s/g, ''),
+  image: vorschauUrl,
+  hasMap: kartenLink,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: firma.strasse,
+    postalCode: firma.plz,
+    addressLocality: firma.ort,
+    addressRegion: 'Nordrhein-Westfalen',
+    addressCountry: firma.landCode,
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: firma.geo.breite,
+    longitude: firma.geo.laenge,
+  },
+  openingHoursSpecification: firma.oeffnungszeiten.map((z) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek:
+      z.tageKurz === 'Mo-Fr'
+        ? ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+        : ['Saturday'],
+    opens: z.von,
+    closes: z.bis,
+  })),
+  areaServed: orte.map((o) => ({
+    '@type': 'City',
+    name: o.name,
+  })),
+  knowsAbout: [
+    'Containerdienst',
+    'Bauschuttentsorgung',
+    'Baustoffhandel',
+    'Recycling von Bau- und Abbruchabfällen',
+    'Entsorgung gefährlicher Abfälle',
+  ],
+};
+
+const brotkrumenSchema =
+  brotkrumen.length > 0
+    ? [
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { name: 'Startseite', pfad: '/' },
+            ...brotkrumen,
+          ].map((punkt, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: punkt.name,
+            item: new URL(punkt.pfad, Astro.site).href,
+          })),
+        },
+      ]
+    : [];
+
+const strukturierteDaten = {
+  '@context': 'https://schema.org',
+  '@graph': [betrieb, ...brotkrumenSchema, ...schema],
+};
+
+const vollerTitel = titel.includes('Schümmer') ? titel : `${titel} | Schümmer Containerdienst`;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="canonical" href={kanonisch} />
+
+    <title>{vollerTitel}</title>
+    <meta name="description" content={beschreibung} />
+    {nichtIndexieren && <meta name="robots" content="noindex, follow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={firma.name} />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:title" content={vollerTitel} />
+    <meta property="og:description" content={beschreibung} />
+    <meta property="og:url" content={kanonisch} />
+    {vorschauUrl && <meta property="og:image" content={vorschauUrl} />}
+    {vorschauUrl && <meta property="og:image:width" content="1200" />}
+    {vorschauUrl && <meta property="og:image:height" content="630" />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#03111d" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f8fa" media="(prefers-color-scheme: light)" />
+    <meta name="geo.region" content="DE-NW" />
+    <meta name="geo.placename" content={firma.ort} />
+    <meta name="author" content={firma.nameLang} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {/* Läuft vor dem ersten Zeichnen. Ohne das blitzt beim Laden im
+        Dunkelmodus kurz die helle Fläche auf. */}
+    <script is:inline>
+      (() => {
+        const wurzel = document.documentElement;
+        wurzel.classList.add('js');
+        try {
+          const gespeichert = localStorage.getItem('schuemmer-modus');
+          const dunkelGewuenscht =
+            gespeichert === 'dunkel' ||
+            (!gespeichert && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          wurzel.classList.toggle('dark', dunkelGewuenscht);
+        } catch {
+          /* Privater Modus ohne Speicher: helle Darstellung ist der Standard. */
+        }
+      })();
+    </script>
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(strukturierteDaten)}
+    />
+
+    <slot name="kopf" />
+  </head>
+
+  <body class="flex min-h-dvh flex-col">
+    <Kopf />
+    <main id="inhalt" class="flex-1">
+      <slot />
+    </main>
+    <Fuss />
+
+    <script>
+      import '~/scripts/seite';
+    </script>
+  </body>
+</html>

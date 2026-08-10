@@ -1,0 +1,57 @@
+---
+import { firma } from '~/lib/firma';
+
+interface Props {
+  /** Auf dunklem Grund wird die Wortmarke weiß statt navy. */
+  hell?: boolean;
+  claim?: boolean;
+  class?: string;
+}
+
+const { hell = false, claim = true, class: extraKlasse = '' } = Astro.props;
+---
+
+<a
+  href="/"
+  class:list={['group flex items-center gap-3', extraKlasse]}
+  aria-label={`${firma.name}, zur Startseite`}
+>
+  {/* Abgekippte Mulde als Bildmarke. Zwei Flächen, keine Details, damit
+      sie auch als Favicon in 16 Pixeln noch lesbar bleibt. */}
+  <svg
+    viewBox="0 0 40 34"
+    class="h-8 w-9 shrink-0"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path d="M0 8h34l-5 18H6L0 8Z" class="fill-signal-500" />
+    <path
+      d="M8 0h32l-3 6H10L8 0Z"
+      class:list={[hell ? 'fill-white/85' : 'fill-navy-900 dark:fill-white/85']}
+    />
+    <path d="M12 26h4l1 8h-4l-1-8Zm12 0h4l-1 8h-4l1-8Z" class="fill-signal-600" />
+  </svg>
+
+  <span class="flex flex-col leading-none">
+    <span
+      class:list={[
+        'text-[1.4rem] font-extrabold tracking-[-0.045em] uppercase',
+        hell ? 'text-white' : 'text-navy-950 dark:text-white',
+      ]}
+    >
+      Schümmer
+    </span>
+    {
+      claim && (
+        <span
+          class:list={[
+            'mt-1 text-[0.62rem] font-bold tracking-[0.2em] uppercase',
+            hell ? 'text-signal-400' : 'text-signal-600 dark:text-signal-400',
+          ]}
+        >
+          {firma.claim}
+        </span>
+      )
+    }
+  </span>
+</a>

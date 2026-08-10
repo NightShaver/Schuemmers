@@ -1,0 +1,189 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Seitenkopf from '~/components/Seitenkopf.astro';
+import Bildrahmen from '~/components/Bildrahmen.astro';
+import Aktionsband from '~/components/Aktionsband.astro';
+import Knopf from '~/components/Knopf.astro';
+
+import { bild } from '~/lib/bilder';
+import { firma } from '~/lib/firma';
+
+const kopfBild = bild('bigbags', 'baustoffe', 'fuhrpark');
+const transportBild = bild('fuhrpark', 'hero', 'gelaende');
+
+const vergleich = [
+  {
+    icon: 'ph:bag-bold',
+    titel: 'BigBag',
+    text: 'Wenn kein Container auf das Grundstück passt oder die Menge klein bleibt.',
+    punkte: [
+      'Steht auf jedem befestigten Quadratmeter',
+      'Kann tagelang stehen bleiben, ohne im Weg zu sein',
+      'Mit Baustoff Ihrer Wahl befüllt lieferbar',
+      'Abholung nach Absprache',
+    ],
+  },
+  {
+    icon: 'ph:shipping-container-bold',
+    titel: 'Container',
+    text: 'Wenn mehr anfällt, als sich tragen lässt, oder die Baustelle länger läuft.',
+    punkte: [
+      'Ab 1,8 m³ bis 40 m³',
+      'Wechsel im laufenden Betrieb möglich',
+      'Für schwere mineralische Abfälle geeignet',
+      'Braucht Stellfläche und Rangierweg',
+    ],
+  },
+];
+
+const transporte = [
+  'Baustofftransporte lose und im Kipper',
+  'Silotransporte',
+  'Container- und Abfalltransporte',
+  'Transport von Stapler und Minibagger',
+];
+---
+
+<Basis
+  titel="BigBags und Transporte | Schümmer Eschweiler"
+  beschreibung="BigBags für Kleinmengen und enge Grundstücke, befüllt mit Baustoff nach Wahl. Dazu Transporte bis 93 m³ in der Städteregion Aachen."
+  brotkrumen={[{ name: 'BigBags', pfad: '/bigbags' }]}
+>
+  <Seitenkopf
+    titel="BigBags und Transporte"
+    text="Nicht jede Baustelle braucht eine Mulde. Für Kleinmengen und enge Grundstücke ist der BigBag die einfachere Lösung, und für alles Schwere fahren unsere eigenen Fahrzeuge."
+    bild={kopfBild}
+    brotkrumen={[{ name: 'BigBags', pfad: '/bigbags' }]}
+  />
+
+  {/* ---------- Vergleich ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="max-w-[46rem]">
+      <h2 class="schrift-titel" data-auf>BigBag oder Container?</h2>
+      <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+        Entscheidend sind Menge, Gewicht und die Frage, wie viel Platz vor der
+        Tür wirklich frei ist.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-4 md:grid-cols-2">
+      {
+        vergleich.map((v, i) => (
+          <article
+            class:list={[
+              'flex flex-col rounded-[var(--radius-md)] p-8 md:p-10',
+              i === 0
+                ? 'border border-transparent bg-navy-900 text-navy-200'
+                : 'border border-[var(--linie)] bg-[var(--flaeche-erhoben)]',
+            ]}
+            data-auf
+            style={`--verzug:${i}`}
+          >
+            <Icon
+              name={v.icon}
+              class:list={['size-8', i === 0 ? 'text-signal-500' : 'text-signal-600 dark:text-signal-400']}
+              aria-hidden="true"
+            />
+            <h3 class:list={['schrift-sub mt-5 text-[1.35rem]', i === 0 ? 'text-white' : 'text-stark']}>
+              {v.titel}
+            </h3>
+            <p class:list={['mt-4 leading-relaxed', i === 0 ? 'text-navy-300' : 'text-normal']}>{v.text}</p>
+            <ul
+              class:list={[
+                'mt-7 space-y-3 border-t pt-6',
+                i === 0 ? 'border-white/10' : 'border-[var(--linie)]',
+              ]}
+            >
+              {v.punkte.map((punkt) => (
+                <li class:list={['flex gap-3 text-[0.95rem]', i === 0 ? 'text-navy-200' : 'text-normal']}>
+                  <Icon
+                    name="ph:check-bold"
+                    class:list={[
+                      'mt-1 size-4 shrink-0',
+                      i === 0 ? 'text-signal-500' : 'text-signal-600 dark:text-signal-400',
+                    ]}
+                    aria-hidden="true"
+                  />
+                  {punkt}
+                </li>
+              ))}
+            </ul>
+            <div class="mt-auto pt-8">
+              {i === 0 ? (
+                <Knopf href={firma.extern.bigbagShop} variante="signal" extern icon="ph:arrow-square-out-bold">
+                  BigBag bestellen
+                </Knopf>
+              ) : (
+                <Knopf href="/container" variante="linie" iconRechts="ph:arrow-right-bold">
+                  Container ansehen
+                </Knopf>
+              )}
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* ---------- Ablauf ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle max-w-[64rem]">
+      <h2 class="schrift-titel" data-auf>Befüllt geliefert statt leer gebracht</h2>
+      <p class="schrift-lead mt-6 max-w-[60ch] text-normal" data-auf style="--verzug:1">
+        Der BigBag muss nicht leer bei Ihnen ankommen. Wir befüllen ihn mit dem
+        Baustoff Ihrer Wahl, etwa Kies, Splitt oder Rindenmulch, und setzen ihn
+        genau dort ab, wo Sie das Material brauchen. Der Inhalt wird pauschal
+        abgerechnet, die Abwicklung kann vor der Anlieferung kontaktfrei per
+        Überweisung erfolgen.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-3" data-auf style="--verzug:2">
+        <Knopf href="/baustoffe" variante="signal" iconRechts="ph:arrow-right-bold">
+          Baustoffe ansehen
+        </Knopf>
+        <Knopf href="/kontakt" variante="linie" iconRechts="ph:arrow-right-bold">
+          Befüllung anfragen
+        </Knopf>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Transporte ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
+      <div>
+        <h2 class="schrift-titel" data-auf>Transporte bis 93 m³</h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          Der eigene Fuhrpark fährt nicht nur Container. Wenn etwas Schweres von
+          A nach B muss, fragen Sie uns.
+        </p>
+
+        <ul class="mt-8 grid gap-3 sm:grid-cols-2">
+          {
+            transporte.map((t, i) => (
+              <li
+                class="flex items-center gap-3 rounded-[var(--radius-sm)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] px-5 py-4 text-[0.95rem] font-bold text-stark"
+                data-auf
+                style={`--verzug:${i % 2}`}
+              >
+                <Icon
+                  name="ph:truck-bold"
+                  class="size-5 shrink-0 text-signal-600 dark:text-signal-400"
+                  aria-hidden="true"
+                />
+                {t}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <Bildrahmen bild={transportBild} format="4/3" sizes="(min-width: 1024px) 50vw, 100vw" />
+    </div>
+  </section>
+
+  <Aktionsband
+    titel="BigBag, Container oder Transport?"
+    text="Beschreiben Sie kurz, was ansteht. Wir sagen Ihnen, welche Lösung günstiger und schneller ist."
+  />
+</Basis>

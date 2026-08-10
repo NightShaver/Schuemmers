@@ -1,0 +1,156 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Seitenkopf from '~/components/Seitenkopf.astro';
+import Bildrahmen from '~/components/Bildrahmen.astro';
+import Aktionsband from '~/components/Aktionsband.astro';
+import Presse from '~/components/Presse.astro';
+
+import { bild } from '~/lib/bilder';
+import { firma, jahreErfahrung } from '~/lib/firma';
+import { orte } from '~/lib/daten/orte';
+import { container } from '~/lib/daten/container';
+
+const kopfBild = bild('team', 'gelaende', 'hero');
+const hofBild = bild('fuhrpark', 'hero', 'gelaende');
+
+const meilensteine = [
+  {
+    jahr: String(firma.gegruendet),
+    titel: 'Gründung in Eschweiler',
+    text: 'Der Betrieb startet als Containerdienst für die Region. Die Albertstraße ist bis heute der Standort.',
+  },
+  {
+    jahr: 'Später',
+    titel: 'Baustoffe kommen dazu',
+    text: 'Wer Abfall abholt, fährt auf dem Rückweg ohnehin leer. Aus dieser Überlegung wird der Baustoffhandel.',
+  },
+  {
+    jahr: String(firma.recyclingSeit),
+    titel: 'Eigene Recyclinganlage',
+    text: 'Statt Bauschutt weiterzufahren, wird er auf dem eigenen Hof aufbereitet. Aus Abfall wird wieder Baustoff.',
+  },
+  {
+    jahr: 'Heute',
+    titel: 'Alles auf einem Gelände',
+    text: `Container, Baustoffe und Aufbereitung liegen zusammen. ${orte.length} Städte im festen Einsatzgebiet.`,
+  },
+];
+
+const haltung = [
+  {
+    icon: 'ph:handshake-bold',
+    titel: 'Wir sagen, was geht',
+    text: 'Wenn ein Container nicht auf Ihre Zufahrt passt, hören Sie das vorher und nicht, wenn der Fahrer schon davor steht.',
+  },
+  {
+    icon: 'ph:recycle-bold',
+    titel: 'Verwertung vor Beseitigung',
+    text: 'Nicht als Formel, sondern als Betriebsablauf. Was wir zurückgewinnen, verkaufen wir als Baustoff weiter.',
+  },
+  {
+    icon: 'ph:users-three-bold',
+    titel: 'Dieselben Gesichter',
+    text: 'Sie sprechen mit Leuten, die den Ort kennen, an dem der Container stehen soll. Kein wechselndes Callcenter.',
+  },
+  {
+    icon: 'ph:clipboard-text-bold',
+    titel: 'Baustellenkoordinatoren für größere Projekte',
+    text: 'Wer eine größere Baustelle plant, bekommt bei uns einen festen Ansprechpartner für Entsorgung und Schüttgüter zugleich.',
+  },
+];
+---
+
+<Basis
+  titel="Über uns | Schümmer Containerdienst Eschweiler"
+  beschreibung={`Familienbetrieb in Eschweiler seit ${firma.gegruendet}. Containerdienst, Baustoffhandel und eigene Recyclinganlage für die Städteregion Aachen.`}
+  brotkrumen={[{ name: 'Über uns', pfad: '/ueber-uns' }]}
+>
+  <Seitenkopf
+    titel={`Seit ${jahreErfahrung} Jahren an derselben Straße`}
+    text={`${firma.nameLang} ist ein Familienbetrieb in Eschweiler. Was ${firma.gegruendet} mit Containern begann, ist heute ein Betriebshof mit eigener Aufbereitungsanlage und eigenem Fuhrpark.`}
+    bild={kopfBild}
+    brotkrumen={[{ name: 'Über uns', pfad: '/ueber-uns' }]}
+  />
+
+  {/* ---------- Zeitleiste ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <ol class="grid gap-px overflow-hidden rounded-[var(--radius-md)] bg-[var(--linie)] md:grid-cols-2 xl:grid-cols-4">
+      {
+        meilensteine.map((m, i) => (
+          <li class="bg-[var(--flaeche-erhoben)] p-7 md:p-8" data-auf style={`--verzug:${i}`}>
+            <p class="zahl text-2xl font-bold text-signal-600 dark:text-signal-400">{m.jahr}</p>
+            <h2 class="mt-4 text-lg font-bold text-stark">{m.titel}</h2>
+            <p class="mt-2 text-[0.92rem] leading-relaxed text-normal">{m.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {/* ---------- Haltung ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
+      <div>
+        <h2 class="schrift-titel" data-auf>Wie wir arbeiten</h2>
+        <ul class="mt-9 space-y-7">
+          {
+            haltung.map((h, i) => (
+              <li class="flex gap-5" data-auf style={`--verzug:${i + 1}`}>
+                <Icon
+                  name={h.icon}
+                  class="mt-1 size-7 shrink-0 text-signal-600 dark:text-signal-400"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 class="text-lg font-bold text-stark">{h.titel}</h3>
+                  <p class="mt-2 leading-relaxed text-normal">{h.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <Bildrahmen bild={hofBild} format="4/3" sizes="(min-width: 1024px) 50vw, 100vw" />
+    </div>
+  </section>
+
+  {/* ---------- Zahlen und Fakten ---------- */}
+  <section class="bg-navy-950 py-20 text-navy-200 md:py-28">
+    <div class="huelle">
+      <h2 class="schrift-titel max-w-[24ch] text-white" data-auf>Der Betrieb in Zahlen und Daten</h2>
+
+      <dl class="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          [
+            { begriff: 'Firmierung', wert: firma.nameLang },
+            { begriff: 'Inhaltlich verantwortlich', wert: firma.inhaber },
+            { begriff: 'Standort', wert: `${firma.strasse}, ${firma.plz} ${firma.ort}` },
+            { begriff: 'Gegründet', wert: String(firma.gegruendet) },
+            { begriff: 'Recyclinganlage seit', wert: String(firma.recyclingSeit) },
+            { begriff: 'Containergrößen', wert: `${container.length} von 1,8 bis 40 m³` },
+            { begriff: 'Maximales Transportvolumen', wert: '93 m³' },
+            { begriff: 'Handelsregister', wert: `${firma.handelsregister}, ${firma.registergericht}` },
+            { begriff: 'Umsatzsteuer-Identifikationsnummer', wert: firma.ustId },
+          ].map((z, i) => (
+            <div class="border-t border-white/10 pt-5" data-auf style={`--verzug:${i % 3}`}>
+              <dt class="text-[0.8rem] font-bold tracking-wide text-signal-500 uppercase">{z.begriff}</dt>
+              <dd class="mt-2 leading-snug font-bold text-white">{z.wert}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  {/* ---------- Presse ---------- */}
+  <section id="presse" class="huelle scroll-mt-28 py-20 md:py-28">
+    <Presse einleitung="Berichte über den Betrieb, die Anlage und die Arbeit in der Region." />
+  </section>
+
+  <Aktionsband
+    titel="Reden wir über Ihr Projekt"
+    text="Ob eine Mulde für den Keller oder ein Dauerstandplatz für die Baustelle: Ein Anruf reicht, um es einzuschätzen."
+  />
+</Basis>

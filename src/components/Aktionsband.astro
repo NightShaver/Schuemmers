@@ -1,0 +1,44 @@
+---
+import { Icon } from 'astro-icon/components';
+import Knopf from './Knopf.astro';
+import { firma, telefonHaupt } from '~/lib/firma';
+
+interface Props {
+  titel?: string;
+  text?: string;
+}
+
+const {
+  titel = 'Container anfragen, Angebot bekommen',
+  text = 'Sagen Sie uns, was weg soll und wo es steht. Den Rest übernehmen wir, von der passenden Größe bis zum Nachweis.',
+} = Astro.props;
+---
+
+<section class="bg-navy-950 text-navy-200">
+  <div class="huelle py-16 md:py-24">
+    <div class="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
+      <div>
+        <h2 class="schrift-titel text-white" data-auf>{titel}</h2>
+        <p class="schrift-lead mt-5 max-w-[52ch] text-navy-300" data-auf style="--verzug:1">{text}</p>
+      </div>
+
+      <div class="flex flex-col gap-4" data-auf style="--verzug:2">
+        <Knopf href="/kontakt" variante="signal" groesse="gross" iconRechts="ph:arrow-right-bold">
+          Container anfragen
+        </Knopf>
+        <a
+          href={`tel:${telefonHaupt.wahl}`}
+          class="group flex items-center gap-4 rounded-[var(--radius-sm)] border border-white/20 px-6 py-4 transition-colors hover:border-signal-500"
+        >
+          <Icon name="ph:phone-call-bold" class="size-6 shrink-0 text-signal-500" aria-hidden="true" />
+          <span class="text-left">
+            <span class="zahl block text-lg leading-tight font-bold text-white">{telefonHaupt.anzeige}</span>
+            <span class="block text-[0.8rem] text-navy-300">
+              {firma.oeffnungszeiten[0].tageKurz} {firma.oeffnungszeiten[0].von} bis {firma.oeffnungszeiten[0].bis} Uhr
+            </span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

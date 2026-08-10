@@ -1,0 +1,166 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Konfigurator from '~/components/Konfigurator.astro';
+import Knopf from '~/components/Knopf.astro';
+import Karte from '~/components/Karte.astro';
+import Statusmeldung from '~/components/Statusmeldung.astro';
+
+import { firma, telefonHaupt, kartenLink, adresseEinzeilig } from '~/lib/firma';
+
+const wege = [
+  {
+    icon: 'ph:phone-call-bold',
+    titel: 'Anrufen',
+    text: 'Der schnellste Weg. Vor allem, wenn die Zufahrt eng ist oder der Termin drängt.',
+    zeilen: firma.telefone.map((t) => ({ text: t.anzeige, href: `tel:${t.wahl}` })),
+  },
+  {
+    icon: 'ph:envelope-simple-bold',
+    titel: 'Schreiben',
+    text: 'Für Anfragen mit Fotos, Mengenlisten oder Ausschreibungsunterlagen.',
+    zeilen: [{ text: firma.email, href: `mailto:${firma.email}` }],
+  },
+  {
+    icon: 'ph:map-pin-bold',
+    titel: 'Vorbeikommen',
+    text: 'Selbstanlieferung und Abholung von Baustoffen direkt am Betriebshof.',
+    zeilen: [{ text: adresseEinzeilig, href: kartenLink }],
+  },
+];
+---
+
+<Basis
+  titel="Kontakt | Schümmer Containerdienst Eschweiler"
+  beschreibung={`Container anfragen, Baustoff bestellen oder Entsorgung klären. Telefon ${telefonHaupt.anzeige}, ${firma.strasse}, ${firma.plz} ${firma.ort}. Antwort meist am selben Werktag.`}
+  brotkrumen={[{ name: 'Kontakt', pfad: '/kontakt' }]}
+>
+  {/* ---------- Kopf ---------- */}
+  <section class="border-b border-[var(--linie)]">
+    <div class="huelle pt-14 pb-16 md:pt-20 md:pb-20">
+      <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
+        <div>
+          <h1 class="schrift-display text-stark" data-auf="seite">Sagen Sie uns, was ansteht.</h1>
+          <p class="schrift-lead mt-7 max-w-[50ch] text-normal" data-auf style="--verzug:1">
+            Wir melden uns meist am selben Werktag mit einem konkreten Angebot.
+            Wer es eilig hat, ruft besser gleich an.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3 lg:justify-end" data-auf style="--verzug:2">
+          <Knopf href={`tel:${telefonHaupt.wahl}`} variante="signal" groesse="gross" icon="ph:phone-call-bold">
+            <span class="zahl">{telefonHaupt.anzeige}</span>
+          </Knopf>
+          <Knopf href="#konfigurator" variante="linie" groesse="gross" iconRechts="ph:arrow-down-bold">
+            Zum Formular
+          </Knopf>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Wege ---------- */}
+  <section class="huelle py-16 md:py-20">
+    <div class="grid gap-4 md:grid-cols-3">
+      {
+        wege.map((weg, i) => (
+          <article
+            class="rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-7"
+            data-auf
+            style={`--verzug:${i}`}
+          >
+            <Icon name={weg.icon} class="size-7 text-signal-600 dark:text-signal-400" aria-hidden="true" />
+            <h2 class="mt-5 text-lg font-bold text-stark">{weg.titel}</h2>
+            <p class="mt-2 text-[0.92rem] leading-relaxed text-normal">{weg.text}</p>
+            <ul class="mt-5 space-y-1.5 border-t border-[var(--linie)] pt-4">
+              {weg.zeilen.map((zeile) => (
+                <li>
+                  <a
+                    href={zeile.href}
+                    class="font-bold break-words text-stark transition-colors hover:text-signal-600 dark:hover:text-signal-400"
+                  >
+                    {zeile.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-3">
+      <div
+        class="rounded-[var(--radius-md)] border border-transparent bg-navy-900 p-7 text-navy-200 lg:col-span-2"
+        data-auf
+      >
+        <h2 class="text-lg font-bold text-white">Öffnungszeiten</h2>
+        <dl class="mt-5 grid gap-x-10 gap-y-3 sm:grid-cols-2">
+          {
+            firma.oeffnungszeiten.map((z) => (
+              <div class="flex items-baseline justify-between gap-6 border-b border-white/10 pb-3">
+                <dt class="text-navy-300">{z.tage}</dt>
+                <dd class="zahl font-bold text-white">{z.zeit}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="mt-4 text-[0.88rem] text-navy-400">{firma.hinweisWaage}</p>
+      </div>
+
+      <div
+        class="rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-7"
+        data-auf
+        style="--verzug:1"
+      >
+        <h2 class="text-lg font-bold text-stark">Direkt online bestellen</h2>
+        <p class="mt-2 text-[0.92rem] leading-relaxed text-normal">
+          Container, Baustoffe und BigBags gibt es auch über unsere Partnerportale.
+        </p>
+        <div class="mt-5 grid gap-2">
+          <Knopf href={firma.extern.containerShop} variante="linie" extern icon="ph:arrow-square-out-bold">
+            Bestellportal
+          </Knopf>
+          <Knopf href={firma.extern.bigbagShop} variante="linie" extern icon="ph:arrow-square-out-bold">
+            BigBags
+          </Knopf>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Formular ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-16 md:py-24">
+    <div class="huelle">
+      <Statusmeldung />
+      <Konfigurator />
+    </div>
+  </section>
+
+  {/* ---------- Anfahrt ---------- */}
+  <section class="huelle py-16 md:py-24">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16">
+      <div>
+        <h2 class="schrift-titel" data-auf>Anfahrt zum Betriebshof</h2>
+        <address class="mt-6 text-lg leading-relaxed not-italic text-stark" data-auf style="--verzug:1">
+          {firma.nameLang}<br />
+          {firma.strasse}<br />
+          {firma.plz} {firma.ort}
+        </address>
+        <p class="mt-6 max-w-[46ch] leading-relaxed text-normal" data-auf style="--verzug:2">
+          Selbstanlieferer fahren direkt auf die Waage. Bitte planen Sie das
+          letzte Einwiegen 15 Minuten vor Schließung ein.
+        </p>
+        <div class="mt-8" data-auf style="--verzug:3">
+          <Knopf href={kartenLink} variante="signal" extern icon="ph:navigation-arrow-bold">
+            Route planen
+          </Knopf>
+        </div>
+      </div>
+
+      <div data-auf style="--verzug:2">
+        <Karte />
+      </div>
+    </div>
+  </section>
+</Basis>

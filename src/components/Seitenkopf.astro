@@ -1,0 +1,59 @@
+---
+import { Icon } from 'astro-icon/components';
+import Bildrahmen from './Bildrahmen.astro';
+import type { Bild } from '~/lib/bilder';
+
+interface Props {
+  titel: string;
+  text: string;
+  bild?: Bild;
+  brotkrumen?: { name: string; pfad: string }[];
+}
+
+const { titel, text, bild, brotkrumen = [] } = Astro.props;
+---
+
+<section class="border-b border-[var(--linie)]">
+  <div class="huelle pt-8 pb-14 md:pt-10 md:pb-20">
+    {
+      brotkrumen.length > 0 && (
+        <nav aria-label="Sie sind hier" class="mb-8">
+          <ol class="flex flex-wrap items-center gap-2 text-[0.82rem] text-[var(--text-leise)]">
+            <li>
+              <a href="/" class="transition-colors hover:text-stark">
+                Start
+              </a>
+            </li>
+            {brotkrumen.map((punkt, i) => (
+              <li class="flex items-center gap-2">
+                <Icon name="ph:caret-right-bold" class="size-3 opacity-50" aria-hidden="true" />
+                {i === brotkrumen.length - 1 ? (
+                  <span class="font-bold text-stark">{punkt.name}</span>
+                ) : (
+                  <a href={punkt.pfad} class="transition-colors hover:text-stark">
+                    {punkt.name}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )
+    }
+
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
+      <div>
+        <h1 class="schrift-display text-stark" data-auf="seite">{titel}</h1>
+        <p class="schrift-lead mt-7 max-w-[52ch] text-normal" data-auf style="--verzug:1">{text}</p>
+      </div>
+
+      {
+        bild && (
+          <div data-auf style="--verzug:2">
+            <Bildrahmen bild={bild} format="16/10" vorrang sizes="(min-width: 1024px) 45vw, 100vw" />
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>

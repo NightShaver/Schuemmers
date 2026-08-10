@@ -1,0 +1,288 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Konfigurator from '~/components/Konfigurator.astro';
+import Faqliste from '~/components/Faqliste.astro';
+import Aktionsband from '~/components/Aktionsband.astro';
+import Bildrahmen from '~/components/Bildrahmen.astro';
+import Knopf from '~/components/Knopf.astro';
+
+import { bild } from '~/lib/bilder';
+import { orte, andereOrte, type Ort } from '~/lib/daten/orte';
+import { abfallarten } from '~/lib/daten/abfallarten';
+import { container, bauarten } from '~/lib/daten/container';
+import { fragenFuer } from '~/lib/daten/faq';
+import { firma, telefonHaupt, jahreErfahrung } from '~/lib/firma';
+
+export function getStaticPaths() {
+  return orte.map((ort) => ({ params: { ort: ort.slug }, props: { ort } }));
+}
+
+interface Props {
+  ort: Ort;
+}
+
+const { ort } = Astro.props;
+const weitere = andereOrte(ort.slug);
+const kopfBild = bild('hero', 'fuhrpark', 'gelaende');
+const ortsfragen = fragenFuer('ort');
+
+const istSitz = ort.entfernungKm === 0;
+
+const beliebteGroessen = ['absetz-3', 'absetz-6', 'absetz-10', 'abroll-20']
+  .map((id) => container.find((c) => c.id === id))
+  .filter((c): c is NonNullable<typeof c> => Boolean(c));
+
+const schema = [
+  {
+    '@type': 'Service',
+    name: `Containerdienst ${ort.name}`,
+    serviceType: 'Containervermietung und Abfallentsorgung',
+    provider: { '@id': `${Astro.site}#betrieb` },
+    areaServed: {
+      '@type': 'City',
+      name: ort.name,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: ort.name,
+        addressRegion: 'Nordrhein-Westfalen',
+        addressCountry: 'DE',
+      },
+    },
+    description: `Absetz- und Abrollcontainer von 1,8 bis 40 m³ für ${ort.name} und die Ortsteile ${ort.stadtteile.join(', ')}.`,
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: ortsfragen.map((f) => ({
+      '@type': 'Question',
+      name: f.frage,
+      acceptedAnswer: { '@type': 'Answer', text: f.antwort },
+    })),
+  },
+];
+---
+
+<Basis
+  titel={`Container mieten in ${ort.name} | Schümmer Containerdienst`}
+  beschreibung={`Container mieten in ${ort.name}: Absetz- und Abrollcontainer von 1,8 bis 40 m³. ${istSitz ? 'Betriebshof direkt vor Ort.' : `Nur ${ort.entfernungKm} km entfernt.`} Angebot meist am selben Werktag.`}
+  brotkrumen={[{ name: `Container ${ort.name}`, pfad: `/containerdienst/${ort.slug}` }]}
+  schema={schema}
+>
+  {/* ---------- Kopf ---------- */}
+  <section class="border-b border-[var(--linie)]">
+    <div class="huelle pt-8 pb-16 md:pt-10 md:pb-20">
+      <nav aria-label="Sie sind hier" class="mb-8">
+        <ol class="flex flex-wrap items-center gap-2 text-[0.82rem] text-[var(--text-leise)]">
+          <li><a href="/" class="transition-colors hover:text-stark">Start</a></li>
+          <li class="flex items-center gap-2">
+            <Icon name="ph:caret-right-bold" class="size-3 opacity-50" aria-hidden="true" />
+            <a href="/container" class="transition-colors hover:text-stark">Container</a>
+          </li>
+          <li class="flex items-center gap-2">
+            <Icon name="ph:caret-right-bold" class="size-3 opacity-50" aria-hidden="true" />
+            <span class="font-bold text-stark">{ort.name}</span>
+          </li>
+        </ol>
+      </nav>
+
+      <div class="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
+        <div>
+          <h1 class="schrift-display text-stark" data-auf="seite">
+            Container mieten<br />
+            <span class="relative inline-block">
+              in {ort.name}.
+              <span
+                class="absolute -bottom-1 left-0 h-[6px] w-full bg-signal-500 md:-bottom-2 md:h-[10px]"
+                aria-hidden="true"></span>
+            </span>
+          </h1>
+
+          <p class="schrift-lead mt-8 max-w-[50ch] text-normal" data-auf style="--verzug:1">
+            {
+              istSitz
+                ? `Unser Betriebshof steht ${ort.imOrt}. Kürzere Wege gibt es nicht.`
+                : `${ort.entfernungKm} km vom Betriebshof in Eschweiler. Unsere Fahrzeuge sind hier täglich unterwegs.`
+            }
+          </p>
+
+          <div class="mt-9 flex flex-wrap gap-3" data-auf style="--verzug:2">
+            <Knopf href="#konfigurator" variante="signal" groesse="gross" iconRechts="ph:arrow-down-bold">
+              Container anfragen
+            </Knopf>
+            <Knopf
+              href={`tel:${telefonHaupt.wahl}`}
+              variante="linie"
+              groesse="gross"
+              icon="ph:phone-call-bold"
+            >
+              <span class="zahl">{telefonHaupt.anzeige}</span>
+            </Knopf>
+          </div>
+        </div>
+
+        <div data-auf style="--verzug:2">
+          <Bildrahmen bild={kopfBild} format="16/10" vorrang sizes="(min-width: 1024px) 45vw, 100vw" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Lage ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
+      <div>
+        <h2 class="schrift-titel" data-auf>Was {ort.imOrt} typisch ist</h2>
+        <p class="schrift-lead mt-6 max-w-[58ch] text-normal" data-auf style="--verzug:1">{ort.lage}</p>
+        <p class="mt-5 max-w-[58ch] leading-relaxed text-normal" data-auf style="--verzug:2">
+          {ort.schwerpunkt}
+        </p>
+      </div>
+
+      <dl class="grid content-start gap-px overflow-hidden rounded-[var(--radius-md)] bg-[var(--linie)]">
+        <div class="bg-[var(--flaeche-erhoben)] p-6" data-auf style="--verzug:1">
+          <dt class="text-[0.78rem] font-bold tracking-wide text-[var(--text-leise)] uppercase">
+            Entfernung zum Betriebshof
+          </dt>
+          <dd class="zahl mt-2 text-2xl font-bold text-stark">
+            {istSitz ? 'Standort' : `rund ${ort.entfernungKm} km`}
+          </dd>
+        </div>
+        <div class="bg-[var(--flaeche-erhoben)] p-6" data-auf style="--verzug:2">
+          <dt class="text-[0.78rem] font-bold tracking-wide text-[var(--text-leise)] uppercase">
+            Postleitzahlen
+          </dt>
+          <dd class="zahl mt-2 leading-relaxed font-bold text-stark">{ort.plz.join(', ')}</dd>
+        </div>
+        <div class="bg-[var(--flaeche-erhoben)] p-6" data-auf style="--verzug:3">
+          <dt class="text-[0.78rem] font-bold tracking-wide text-[var(--text-leise)] uppercase">
+            Ortsteile im Einsatzgebiet
+          </dt>
+          <dd class="mt-2 leading-relaxed font-bold text-stark">{ort.stadtteile.join(', ')}</dd>
+        </div>
+        <div class="bg-[var(--flaeche-erhoben)] p-6" data-auf style="--verzug:4">
+          <dt class="text-[0.78rem] font-bold tracking-wide text-[var(--text-leise)] uppercase">Kreis</dt>
+          <dd class="mt-2 font-bold text-stark">{ort.kreis}</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  {/* ---------- Beliebte Größen ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle">
+      <div class="max-w-[46rem]">
+        <h2 class="schrift-titel" data-auf>Die vier häufigsten Größen {ort.imOrt}</h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          Insgesamt haben wir {container.length} Größen im Bestand. Diese vier
+          decken die meisten privaten und gewerblichen Projekte ab.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          beliebteGroessen.map((c, i) => (
+            <article
+              class="rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-6"
+              data-auf
+              style={`--verzug:${i}`}
+            >
+              <p class="zahl text-3xl leading-none font-bold text-stark">
+                {String(c.volumen).replace('.', ',')}
+                <span class="ml-1 text-base text-[var(--text-leise)]">m³</span>
+              </p>
+              <p class="mt-2 text-[0.75rem] font-bold tracking-[0.14em] text-[var(--text-leise)] uppercase">
+                {bauarten[c.bauart].kurz}
+              </p>
+              <p class="mt-4 border-t border-[var(--linie)] pt-4 text-[0.88rem] leading-snug text-normal">
+                {c.typisch}
+              </p>
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="mt-10" data-auf>
+        <Knopf href="/container" variante="linie" iconRechts="ph:arrow-right-bold">
+          Alle Größen mit Maßen
+        </Knopf>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Abfallarten ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="max-w-[46rem]">
+      <h2 class="schrift-titel" data-auf>Wofür Kunden {ort.imOrt} bestellen</h2>
+      <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+        Für jede dieser Abfallarten stellen wir den passenden Container und
+        übernehmen die Entsorgung auf unserer eigenen Anlage.
+      </p>
+    </div>
+
+    <ul class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        abfallarten.map((a, i) => (
+          <li
+            class="flex items-start gap-4 rounded-[var(--radius-sm)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-5"
+            data-auf
+            style={`--verzug:${i % 3}`}
+          >
+            <Icon
+              name={a.icon}
+              class="mt-0.5 size-6 shrink-0 text-signal-600 dark:text-signal-400"
+              aria-hidden="true"
+            />
+            <span>
+              <span class="block font-bold text-stark">{a.kurz}</span>
+              <span class="mt-1 block text-[0.85rem] leading-snug text-[var(--text-leise)]">
+                {a.gehoertRein.slice(0, 3).join(', ')}
+              </span>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* ---------- Konfigurator ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle">
+      <Konfigurator vorgabeOrt={ort.name} />
+    </div>
+  </section>
+
+  {/* ---------- Fragen ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <Faqliste fragen={ortsfragen} titel={`Fragen zum Container ${ort.imOrt}`} />
+  </section>
+
+  {/* ---------- Weitere Orte ---------- */}
+  <section class="border-t border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-16 md:py-20">
+    <div class="huelle">
+      <h2 class="text-lg font-bold text-stark">Wir liefern auch hierhin</h2>
+      <p class="mt-2 max-w-[52ch] text-[0.95rem] text-normal">
+        Seit {jahreErfahrung} Jahren von {firma.ort} aus im Einsatz. Ihr Ort ist
+        nicht dabei? Fragen Sie trotzdem, meist geht es.
+      </p>
+      <ul class="mt-6 flex flex-wrap gap-2">
+        {
+          weitere.map((o) => (
+            <li>
+              <a
+                href={`/containerdienst/${o.slug}`}
+                class="inline-flex rounded-[var(--radius-sm)] border border-[var(--linie-stark)] bg-[var(--flaeche-erhoben)] px-4 py-2 text-[0.9rem] font-bold text-stark transition-colors hover:border-signal-500"
+              >
+                Container {o.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <Aktionsband
+    titel={`Container für ${ort.name} anfragen`}
+    text="Sagen Sie uns Abfallart, Größe und Stellplatz. Sie bekommen ein Angebot, meist noch am selben Werktag."
+  />
+</Basis>

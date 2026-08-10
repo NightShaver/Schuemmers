@@ -1,0 +1,131 @@
+---
+import { Icon } from 'astro-icon/components';
+import { firma, adresseEinzeilig, kartenLink } from '~/lib/firma';
+
+interface Props {
+  hoehe?: string;
+  /** Auf dunklem Grund, etwa im Fußbereich. */
+  dunkel?: boolean;
+  /** Kurzform ohne Erklärtext, für enge Spalten. */
+  knapp?: boolean;
+  class?: string;
+}
+
+const {
+  hoehe = 'h-[26rem] lg:h-full lg:min-h-[28rem]',
+  dunkel = false,
+  knapp = false,
+  class: extraKlasse = '',
+} = Astro.props;
+
+// Ausschnitt um den Betriebshof. Gerundet, damit in der URL keine
+// Gleitkomma-Reste wie 6.2581000000000005 landen.
+const runde = (wert: number) => Number(wert.toFixed(5));
+const spanne = knapp ? 0.005 : 0.008;
+const bbox = [
+  runde(firma.geo.laenge - spanne),
+  runde(firma.geo.breite - spanne / 2),
+  runde(firma.geo.laenge + spanne),
+  runde(firma.geo.breite + spanne / 2),
+].join(',');
+
+const einbettung = `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${runde(firma.geo.breite)}%2C${runde(firma.geo.laenge)}`;
+---
+
+{/* Die Karte lädt erst auf Klick. Bis dahin geht keine Anfrage an einen
+    fremden Server, es wird also keine IP-Adresse übertragen und die Seite
+    braucht dafür keinen Einwilligungsdialog. */}
+<div
+  data-karte
+  data-einbettung={einbettung}
+  class:list={[
+    'relative overflow-hidden rounded-[var(--radius-md)] border',
+    dunkel ? 'border-white/10 bg-white/5' : 'border-[var(--linie)] bg-[var(--flaeche-gesenkt)]',
+    hoehe,
+    extraKlasse,
+  ]}
+>
+  <div
+    data-karte-vorschau
+    class="absolute inset-0 grid place-items-center p-6 text-center"
+    style={`background-image:radial-gradient(${dunkel ? 'rgba(255,255,255,.14)' : 'var(--linie-stark)'} 1px,transparent 1px);background-size:20px 20px`}
+  >
+    {/* Scheibe hinter dem Text, sonst läuft das Punktmuster durch die
+        Buchstaben und der Hinweis wird schwer lesbar. */}
+    <div
+      class:list={[
+        'max-w-[26rem] rounded-[var(--radius-sm)] px-4 py-4 backdrop-blur-[2px]',
+        dunkel ? 'bg-navy-950/80' : 'bg-[var(--flaeche-gesenkt)]/85',
+      ]}
+    >
+      <Icon
+        name="ph:map-trifold-bold"
+        class:list={['mx-auto', knapp ? 'size-7' : 'size-9', dunkel ? 'text-signal-500' : 'text-signal-600 dark:text-signal-400']}
+        aria-hidden="true"
+      />
+      <p class:list={['mt-3 font-bold', dunkel ? 'text-white' : 'text-stark']}>{adresseEinzeilig}</p>
+
+      {
+        !knapp && (
+          <p class:list={['mt-2 text-[0.88rem] leading-relaxed', dunkel ? 'text-navy-300' : 'text-normal']}>
+            Die Karte kommt von OpenStreetMap. Beim Laden wird Ihre IP-Adresse an
+            die OpenStreetMap Foundation übertragen.
+          </p>
+        )
+      }
+
+      <div class="mt-4 flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          data-karte-laden
+          class="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-signal-500 bg-signal-500 px-4 py-2.5 text-[0.85rem] font-bold text-navy-950 transition-colors hover:bg-signal-400"
+        >
+          <Icon name="ph:map-pin-bold" class="size-4" aria-hidden="true" />
+          Karte laden
+        </button>
+        <a
+          href={kartenLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          class:list={[
+            'inline-flex items-center gap-2 rounded-[var(--radius-sm)] border px-4 py-2.5 text-[0.85rem] font-bold transition-colors',
+            dunkel
+              ? 'border-white/25 text-white hover:border-signal-500'
+              : 'border-[var(--linie-stark)] text-stark hover:bg-[var(--flaeche-erhoben)]',
+          ]}
+        >
+          <Icon name="ph:navigation-arrow-bold" class="size-4" aria-hidden="true" />
+          Route planen
+        </a>
+      </div>
+      {
+        knapp && (
+          <p class:list={['mt-3 text-[0.78rem] leading-snug', dunkel ? 'text-navy-400' : 'text-[var(--text-leise)]']}>
+            Beim Laden wird Ihre IP-Adresse an OpenStreetMap übertragen.
+          </p>
+        )
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  // Läuft über alle Karten der Seite, damit Fußbereich und Kontaktseite
+  // dieselbe Komponente mehrfach verwenden können.
+  document.querySelectorAll<HTMLElement>('[data-karte]').forEach((behaelter) => {
+    const knopf = behaelter.querySelector<HTMLButtonElement>('[data-karte-laden]');
+    const vorschau = behaelter.querySelector<HTMLElement>('[data-karte-vorschau]');
+
+    knopf?.addEventListener('click', () => {
+      if (!vorschau) return;
+      const rahmen = document.createElement('iframe');
+      rahmen.src = behaelter.dataset.einbettung ?? '';
+      rahmen.title = 'Karte mit dem Standort des Betriebshofs';
+      rahmen.loading = 'lazy';
+      rahmen.referrerPolicy = 'no-referrer';
+      rahmen.className = 'absolute inset-0 size-full border-0';
+      behaelter.append(rahmen);
+      vorschau.remove();
+    });
+  });
+</script>

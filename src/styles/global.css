@@ -1,0 +1,254 @@
+@import 'tailwindcss';
+
+/* Selbst gehostete Schriften. Kein externer Request, kein Layout-Shift. */
+@import '@fontsource-variable/archivo/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
+
+/* Dark Mode wird über eine Klasse am <html> gesteuert, damit der Umschalter
+   im Header die Systemvorgabe überschreiben kann. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* ---- Marke -------------------------------------------------------
+     Die Palette kommt direkt vom Fuhrpark: blaue Zugmaschinen,
+     signalgelbe Mulden. Ein Akzent, konsequent auf allen Seiten. */
+  --color-navy-50: #eef4fa;
+  --color-navy-100: #d5e5f2;
+  --color-navy-200: #a9c9e4;
+  --color-navy-300: #6fa3cf;
+  --color-navy-400: #3b7cb4;
+  --color-navy-500: #1c5c94;
+  --color-navy-600: #124776;
+  --color-navy-700: #0c355a;
+  --color-navy-800: #082741;
+  --color-navy-900: #051b2e;
+  --color-navy-950: #03111d;
+
+  --color-signal-300: #ffd95c;
+  --color-signal-400: #ffc72c;
+  --color-signal-500: #f7b500;
+  --color-signal-600: #d29700;
+  --color-signal-700: #a87800;
+
+  /* Kühle Neutraltöne, damit nichts gegen das Navy warm ausfranst. */
+  --color-stein-50: #f6f8fa;
+  --color-stein-100: #eceff4;
+  --color-stein-200: #dde3ea;
+  --color-stein-300: #c3ccd8;
+  --color-stein-400: #93a1b3;
+  --color-stein-500: #6b7b8e;
+  --color-stein-600: #4f5d6e;
+  --color-stein-700: #3a4653;
+  --color-stein-800: #232c36;
+  --color-stein-900: #161d25;
+  --color-stein-950: #0c1116;
+
+  /* ---- Schrift ---- */
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+
+  /* ---- Radien ------------------------------------------------------
+     Eine Regel, überall gleich: interaktive Elemente 3px,
+     Container und Bilder 6px. Nichts Rundes, nichts Pillenförmiges. */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+
+  --ease-aus: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Semantische Token, ein Satz pro Modus ------------------------- */
+:root {
+  --flaeche: var(--color-stein-50);
+  --flaeche-erhoben: #ffffff;
+  --flaeche-gesenkt: var(--color-stein-100);
+  --text-stark: var(--color-navy-950);
+  --text-normal: var(--color-stein-700);
+  --text-leise: var(--color-stein-500);
+  --linie: var(--color-stein-200);
+  --linie-stark: var(--color-stein-300);
+  --akzent: var(--color-signal-500);
+  --akzent-text: var(--color-navy-950);
+  --schatten: 0 1px 2px rgb(3 17 29 / 0.06), 0 12px 32px -12px rgb(3 17 29 / 0.18);
+  color-scheme: light;
+}
+
+.dark {
+  --flaeche: var(--color-navy-950);
+  --flaeche-erhoben: var(--color-navy-900);
+  --flaeche-gesenkt: #020c15;
+  --text-stark: var(--color-stein-50);
+  --text-normal: var(--color-navy-200);
+  --text-leise: #7e9ab5;
+  --linie: #0d2b45;
+  --linie-stark: #14415f;
+  --akzent: var(--color-signal-400);
+  --akzent-text: var(--color-navy-950);
+  --schatten: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -16px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: var(--flaeche);
+    color: var(--text-normal);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--text-stark);
+    text-wrap: balance;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-signal-400);
+    color: var(--color-navy-950);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-signal-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Der native Marker würde neben dem eigenen Chevron doppelt erscheinen. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary {
+    list-style: none;
+  }
+}
+
+@layer components {
+  .huelle {
+    width: 100%;
+    max-width: 84rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .huelle {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Fließende Skala statt fester Breakpoint-Sprünge: die Überschriften
+     behalten ihr Verhältnis zueinander auf jedem Gerät. */
+  .schrift-display {
+    /* Obergrenze ist so gewählt, dass die längste Kopfzeile der Seite
+       ("Dann die Baustelle.") ab 1280 Pixeln auf eine Zeile passt. */
+    font-size: clamp(2rem, 1.2rem + 3.4vw, 4.25rem);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+  }
+  .schrift-titel {
+    font-size: clamp(1.85rem, 1.3rem + 2.4vw, 3.25rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+  .schrift-sub {
+    font-size: clamp(1.2rem, 1.05rem + 0.7vw, 1.6rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  .schrift-lead {
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem);
+    line-height: 1.6;
+  }
+
+  /* Kennzahlen und Maße laufen tabellarisch, damit Spalten nicht zappeln. */
+  .zahl {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+}
+
+@layer utilities {
+  .flaeche {
+    background-color: var(--flaeche);
+  }
+  .flaeche-erhoben {
+    background-color: var(--flaeche-erhoben);
+  }
+  .flaeche-gesenkt {
+    background-color: var(--flaeche-gesenkt);
+  }
+  .text-stark {
+    color: var(--text-stark);
+  }
+  .text-normal {
+    color: var(--text-normal);
+  }
+  .text-leise {
+    color: var(--text-leise);
+  }
+  .rand {
+    border-color: var(--linie);
+  }
+  .rand-stark {
+    border-color: var(--linie-stark);
+  }
+  .schatten-karte {
+    box-shadow: var(--schatten);
+  }
+
+  /* Diagonale Warnschraffur, das visuelle Zitat der Container-Bordwand.
+     Nur als schmaler Streifen, nie als Fläche hinter Text. */
+  .schraffur {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--color-signal-500) 0 10px,
+      transparent 10px 20px
+    );
+  }
+}
+
+/* ---- Einblenden beim Scrollen -------------------------------------
+   Trägt Hierarchie: der Blick landet zuerst auf der Überschrift, dann
+   auf den Belegen darunter. Ohne JS unsichtbare Inhalte gibt es nicht,
+   das no-js-Fallback zeigt alles sofort. */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-auf] {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition:
+      opacity 0.7s var(--ease-aus),
+      transform 0.7s var(--ease-aus);
+    transition-delay: calc(var(--verzug, 0) * 70ms);
+  }
+  html.js [data-auf='seite'] {
+    transform: translateX(-1.5rem);
+  }
+  html.js [data-auf].sichtbar {
+    opacity: 1;
+    transform: none;
+  }
+}

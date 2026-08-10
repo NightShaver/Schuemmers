@@ -1,0 +1,431 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Knopf from '~/components/Knopf.astro';
+import Bildrahmen from '~/components/Bildrahmen.astro';
+import Konfigurator from '~/components/Konfigurator.astro';
+import Faqliste from '~/components/Faqliste.astro';
+import Aktionsband from '~/components/Aktionsband.astro';
+import Galerie from '~/components/Galerie.astro';
+import Presse from '~/components/Presse.astro';
+
+import { bild } from '~/lib/bilder';
+import { leistungen } from '~/lib/daten/leistungen';
+import { orte } from '~/lib/daten/orte';
+import { container, kleinstesVolumen, groesstesVolumen } from '~/lib/daten/container';
+import { fragenFuer } from '~/lib/daten/faq';
+import { firma, telefonHaupt, jahreErfahrung } from '~/lib/firma';
+
+const heroBild = bild('hero', 'fuhrpark', 'gelaende');
+const recyclingBild = bild('recycling', 'gelaende');
+const hofBild = bild('gelaende', 'fuhrpark', 'hero');
+const containerBild = bild('container', 'hero', 'fuhrpark');
+const baustoffBild = bild('baustoffe', 'fuhrpark');
+
+const startfragen = fragenFuer('start');
+
+const zahlen = [
+  { wert: String(jahreErfahrung), einheit: 'Jahre', text: 'im Familienbetrieb, seit ' + firma.gegruendet },
+  { wert: String(container.length), einheit: 'Größen', text: `von ${String(kleinstesVolumen).replace('.', ',')} bis ${groesstesVolumen} m³` },
+  { wert: '93', einheit: 'm³', text: 'maximales Transportvolumen' },
+  { wert: String(firma.recyclingSeit), einheit: '', text: 'eigene Recyclinganlage in Betrieb' },
+];
+
+const kreislauf = [
+  {
+    icon: 'ph:truck-bold',
+    titel: 'Abholen',
+    text: 'Der volle Container wird gewechselt oder abgeholt, im laufenden Bauablauf und ohne Standzeit für Ihre Leute.',
+  },
+  {
+    icon: 'ph:scales-bold',
+    titel: 'Verwiegen',
+    text: 'Auf dem Hof geht jede Fuhre über die Waage. Was Sie zahlen, steht auf dem Wiegeschein.',
+  },
+  {
+    icon: 'ph:funnel-bold',
+    titel: 'Sortieren',
+    text: 'Umschlagbagger trennen Holz, Metall, Mineralik und Störstoffe. Was verwertbar ist, bleibt im Kreislauf.',
+  },
+  {
+    icon: 'ph:arrows-clockwise-bold',
+    titel: 'Aufbereiten',
+    text: 'Aus mineralischem Bauschutt wird Recyclingschotter, den Sie bei uns wieder als Baustoff kaufen können.',
+  },
+];
+
+const faqSchema = {
+  '@type': 'FAQPage',
+  mainEntity: startfragen.map((f) => ({
+    '@type': 'Question',
+    name: f.frage,
+    acceptedAnswer: { '@type': 'Answer', text: f.antwort },
+  })),
+};
+---
+
+<Basis
+  titel="Containerdienst Eschweiler und Aachen | Schümmer"
+  beschreibung="Container von 1,8 bis 40 m³, Baustoffe und eigene Recyclinganlage. Entsorgungsfachbetrieb in Eschweiler für die Städteregion Aachen."
+  schema={[faqSchema]}
+>
+  {/* ---------- Aufmacher ---------- */}
+  <section class="relative overflow-hidden border-b border-[var(--linie)]">
+    <div class="huelle">
+      <div class="grid items-center gap-12 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[minmax(0,1.18fr)_minmax(0,0.9fr)] lg:gap-14">
+        <div>
+          <h1 class="schrift-display text-stark" data-auf="seite">
+            Erst der Container.<br />
+            <span class="relative inline-block">
+              Dann die Baustelle.
+              <span
+                class="absolute -bottom-1 left-0 h-[6px] w-full bg-signal-500 md:-bottom-2 md:h-[10px]"
+                aria-hidden="true"></span>
+            </span>
+          </h1>
+
+          <p class="schrift-lead mt-8 max-w-[46ch] text-normal" data-auf style="--verzug:1">
+            Containerdienst, Baustoffe und eigene Recyclinganlage für die
+            Städteregion Aachen. Seit {firma.gegruendet} in Eschweiler.
+          </p>
+
+          <div class="mt-9 flex flex-wrap items-center gap-3" data-auf style="--verzug:2">
+            <Knopf href="#konfigurator" variante="signal" groesse="gross" iconRechts="ph:arrow-down-bold">
+              Container anfragen
+            </Knopf>
+            <Knopf
+              href={`tel:${telefonHaupt.wahl}`}
+              variante="linie"
+              groesse="gross"
+              icon="ph:phone-call-bold"
+            >
+              <span class="zahl">{telefonHaupt.anzeige}</span>
+            </Knopf>
+          </div>
+        </div>
+
+        <div class="relative" data-auf style="--verzug:2">
+          <Bildrahmen
+            bild={heroBild}
+            format="4/3"
+            vorrang
+            sizes="(min-width: 1024px) 48vw, 100vw"
+            class="lg:-mr-[max(0px,calc((100vw-84rem)/2))]"
+          />
+          {/* Der Betriebshof ist das stärkste Argument für Nähe. Deshalb steht
+              er als Beleg direkt am Bild und nicht erst im Fußbereich. */}
+          <div
+            class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.85rem] font-bold text-normal lg:absolute lg:right-6 lg:bottom-6 lg:mt-0 lg:rounded-[var(--radius-sm)] lg:bg-[var(--flaeche-erhoben)]/95 lg:px-5 lg:py-3 lg:backdrop-blur"
+          >
+            <span class="flex items-center gap-2">
+              <Icon name="ph:map-pin-bold" class="size-4 text-signal-600 dark:text-signal-400" aria-hidden="true" />
+              {firma.strasse}, {firma.ort}
+            </span>
+            <span class="flex items-center gap-2">
+              <Icon name="ph:certificate-bold" class="size-4 text-signal-600 dark:text-signal-400" aria-hidden="true" />
+              Entsorgungsfachbetrieb
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Kennzahlen ---------- */}
+  <section class="border-b border-[var(--linie)] bg-[var(--flaeche-gesenkt)]">
+    <div class="huelle">
+      <dl class="grid divide-y divide-[var(--linie)] sm:grid-cols-2 sm:divide-x lg:grid-cols-4">
+        {
+          zahlen.map((z, i) => (
+            <div class="px-0 py-8 sm:px-8 sm:first:pl-0 lg:last:pr-0" data-auf style={`--verzug:${i}`}>
+              <dt class="sr-only">{z.text}</dt>
+              <dd>
+                <span class="zahl block text-4xl leading-none font-bold text-stark md:text-5xl">
+                  {z.wert}
+                  {z.einheit && <span class="ml-1 text-xl text-signal-600 dark:text-signal-400">{z.einheit}</span>}
+                </span>
+                <span class="mt-3 block max-w-[24ch] text-[0.9rem] leading-snug text-normal">{z.text}</span>
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  {/* ---------- Leistungen als Kachelraster ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="max-w-[46rem]">
+      <h2 class="schrift-titel" data-auf>Fünf Bereiche, ein Betriebshof</h2>
+      <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+        Container, Baustoffe und Aufbereitung liegen bei uns auf demselben
+        Gelände. Das spart Wege, Schnittstellen und Rückfragen.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-4 md:grid-cols-3">
+      {/* Containerdienst trägt das meiste Geschäft und bekommt deshalb die
+          doppelte Breite und das Foto. */}
+      <a
+        href={leistungen[0].pfad}
+        class="group relative flex min-h-[22rem] flex-col justify-end overflow-hidden rounded-[var(--radius-md)] bg-navy-900 p-7 md:col-span-2 md:min-h-[26rem]"
+        data-auf
+      >
+        <div class="absolute inset-0">
+          <Bildrahmen
+            bild={containerBild}
+            format="16/10"
+            sizes="(min-width: 768px) 66vw, 100vw"
+            class="size-full [&>div]:size-full [&>div]:rounded-none"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/70 to-navy-950/10"></div>
+        </div>
+
+        <div class="relative">
+          <Icon name={leistungen[0].icon} class="size-8 text-signal-500" aria-hidden="true" />
+          <h3 class="schrift-sub mt-4 text-white">{leistungen[0].name}</h3>
+          <p class="mt-3 max-w-[42ch] text-[0.95rem] leading-relaxed text-navy-200">{leistungen[0].anriss}</p>
+          <span class="mt-5 inline-flex items-center gap-2 text-[0.9rem] font-bold text-signal-400">
+            Größen ansehen
+            <Icon
+              name="ph:arrow-right-bold"
+              class="size-4 transition-transform motion-safe:group-hover:translate-x-1"
+              aria-hidden="true"
+            />
+          </span>
+        </div>
+      </a>
+
+      <a
+        href={leistungen[1].pfad}
+        class="group relative flex min-h-[22rem] flex-col justify-end overflow-hidden rounded-[var(--radius-md)] bg-navy-900 p-7 md:min-h-[26rem]"
+        data-auf
+        style="--verzug:1"
+      >
+        <div class="absolute inset-0">
+          <Bildrahmen
+            bild={baustoffBild}
+            format="3/4"
+            sizes="(min-width: 768px) 33vw, 100vw"
+            class="size-full [&>div]:size-full [&>div]:rounded-none"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/65 to-navy-950/5"></div>
+        </div>
+
+        <div class="relative">
+          <Icon name={leistungen[1].icon} class="size-8 text-signal-500" aria-hidden="true" />
+          <h3 class="schrift-sub mt-4 text-white">{leistungen[1].name}</h3>
+          <p class="mt-3 text-[0.95rem] leading-relaxed text-navy-200">{leistungen[1].anriss}</p>
+          <span class="mt-5 inline-flex items-center gap-2 text-[0.9rem] font-bold text-signal-400">
+            Sortiment ansehen
+            <Icon
+              name="ph:arrow-right-bold"
+              class="size-4 transition-transform motion-safe:group-hover:translate-x-1"
+              aria-hidden="true"
+            />
+          </span>
+        </div>
+      </a>
+
+      {
+        leistungen.slice(2).map((l, i) => (
+          <a
+            href={l.pfad}
+            class:list={[
+              'group flex flex-col rounded-[var(--radius-md)] border p-7 transition-colors',
+              i === 0
+                ? 'border-transparent bg-navy-900 text-navy-200 hover:bg-navy-800'
+                : 'border-[var(--linie)] bg-[var(--flaeche-erhoben)] hover:border-[var(--linie-stark)]',
+            ]}
+            data-auf
+            style={`--verzug:${i + 1}`}
+          >
+            <Icon
+              name={l.icon}
+              class:list={[
+                'size-8',
+                i === 0 ? 'text-signal-500' : 'text-signal-600 dark:text-signal-400',
+              ]}
+              aria-hidden="true"
+            />
+            <h3 class:list={['schrift-sub mt-4', i === 0 ? 'text-white' : 'text-stark']}>{l.name}</h3>
+            <p
+              class:list={[
+                'mt-3 text-[0.95rem] leading-relaxed',
+                i === 0 ? 'text-navy-200' : 'text-normal',
+              ]}
+            >
+              {l.anriss}
+            </p>
+            <span
+              class:list={[
+                'mt-auto inline-flex items-center gap-2 pt-6 text-[0.9rem] font-bold',
+                i === 0 ? 'text-signal-400' : 'text-stark',
+              ]}
+            >
+              Mehr dazu
+              <Icon
+                name="ph:arrow-right-bold"
+                class="size-4 transition-transform motion-safe:group-hover:translate-x-1"
+                aria-hidden="true"
+              />
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* ---------- Konfigurator ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle">
+      <Konfigurator />
+    </div>
+  </section>
+
+  {/* ---------- Kreislauf ---------- */}
+  <section class="bg-navy-950 py-20 text-navy-200 md:py-28">
+    <div class="huelle">
+      <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-16">
+        <div>
+          <h2 class="schrift-titel text-white" data-auf>Ihr Abfall bleibt in der Region</h2>
+          <p class="schrift-lead mt-5 max-w-[48ch] text-navy-300" data-auf style="--verzug:1">
+            Seit {firma.recyclingSeit} betreiben wir eine eigene Aufbereitungsanlage.
+            Was hier ankommt, wird nicht weggefahren, sondern zerlegt und
+            zurück in den Baustoffkreislauf gegeben.
+          </p>
+          <div class="mt-8" data-auf style="--verzug:2">
+            <Knopf href="/recycling" variante="geist" iconRechts="ph:arrow-right-bold">
+              Die Anlage ansehen
+            </Knopf>
+          </div>
+        </div>
+
+        <Bildrahmen
+          bild={recyclingBild}
+          format="16/11"
+          sizes="(min-width: 1024px) 52vw, 100vw"
+          beschriftung="Sortierung von Baustellenabfall auf dem Betriebsgelände in Eschweiler"
+          class="[&_figcaption]:text-navy-400"
+        />
+      </div>
+
+      <ol class="mt-16 grid gap-px overflow-hidden rounded-[var(--radius-md)] bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          kreislauf.map((s, i) => (
+            <li class="bg-navy-950 p-7" data-auf style={`--verzug:${i}`}>
+              <Icon name={s.icon} class="size-7 text-signal-500" aria-hidden="true" />
+              <h3 class="mt-5 text-lg font-bold text-white">{s.titel}</h3>
+              <p class="mt-2 text-[0.9rem] leading-relaxed text-navy-300">{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  {/* ---------- Einsatzgebiet ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="max-w-[46rem]">
+      <h2 class="schrift-titel" data-auf>Wir fahren täglich durch die Region</h2>
+      <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+        Kurze Wege sind der Grund, warum kurzfristige Termine bei uns oft
+        klappen. Neun Städte im festen Einsatzgebiet, weitere auf Anfrage.
+      </p>
+    </div>
+
+    <ul class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        orte.map((o, i) => (
+          <li data-auf style={`--verzug:${i % 3}`}>
+            <a
+              href={`/containerdienst/${o.slug}`}
+              class="group flex items-baseline justify-between gap-4 rounded-[var(--radius-sm)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] px-5 py-4 transition-colors hover:border-signal-500"
+            >
+              <span class="text-[1.05rem] font-bold text-stark">Container {o.name}</span>
+              <span class="zahl shrink-0 text-[0.82rem] text-[var(--text-leise)]">
+                {o.entfernungKm === 0 ? 'Betriebshof' : `${o.entfernungKm} km`}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* ---------- Galerie ---------- */}
+  <section class="huelle pb-20 md:pb-28">
+    <Galerie />
+  </section>
+
+  {/* ---------- Warum ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+      <Bildrahmen bild={hofBild} format="4/3" sizes="(min-width: 1024px) 48vw, 100vw" />
+
+      <div>
+        <h2 class="schrift-titel" data-auf>Ein Ansprechpartner, der die Zufahrt kennt</h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          Seit {firma.gegruendet} arbeiten hier Fahrer, Disponenten und
+          Baggerfahrer, die in dieser Region aufgewachsen sind. Das merkt man
+          an den Antworten am Telefon.
+        </p>
+
+        <ul class="mt-8 space-y-5">
+          {
+            [
+              {
+                titel: 'Entsorgungsfachbetrieb nach Kreislaufwirtschaftsgesetz',
+                text: 'Zertifiziert, überwacht und mit vollständiger Nachweisführung, auch für gefährliche Abfälle.',
+              },
+              {
+                titel: 'Eigener Fuhrpark, eigene Anlage',
+                text: 'Keine Subunternehmer in der Kette. Termin, Fahrzeug und Aufbereitung liegen in einer Hand.',
+              },
+              {
+                titel: 'Beratung vor der Bestellung',
+                text: 'Wir sagen Ihnen, welche Bauart auf Ihre Zufahrt passt, bevor der Lastwagen umsonst fährt.',
+              },
+            ].map((punkt, i) => (
+              <li class="flex gap-4" data-auf style={`--verzug:${i + 1}`}>
+                <Icon
+                  name="ph:check-bold"
+                  class="mt-1 size-5 shrink-0 text-signal-600 dark:text-signal-400"
+                  aria-hidden="true"
+                />
+                <span>
+                  <strong class="block font-bold text-stark">{punkt.titel}</strong>
+                  <span class="mt-1 block text-[0.95rem] leading-relaxed text-normal">{punkt.text}</span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="mt-9" data-auf style="--verzug:4">
+          <Knopf href="/ueber-uns" variante="linie" iconRechts="ph:arrow-right-bold">
+            Über den Betrieb
+          </Knopf>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Presse ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <Presse
+      einleitung="Berichte über den Betrieb, die Anlage und die Arbeit in der Region."
+      hoechstens={3}
+      mehrPfad="/ueber-uns#presse"
+    />
+  </section>
+
+  {/* ---------- Fragen ---------- */}
+  <section class="border-t border-[var(--linie)]">
+    <div class="huelle py-20 md:py-28">
+      <Faqliste fragen={startfragen} />
+    </div>
+  </section>
+
+  <Aktionsband />
+</Basis>

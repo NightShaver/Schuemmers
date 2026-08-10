@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "schuemmer-web",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Eintrittspunkt und die statischen Dateien setzt der Astro-Adapter
+  // beim Bauen selbst. Hier stehen nur Name, Laufzeit und Bindungen.
+
+  // Versand des Anfrageformulars. Die Domain muss einmalig freigeschaltet
+  // werden: npx wrangler email sending enable schuemmer-containerdienst.de
+  "send_email": [{ "name": "EMAIL" }],
+
+  "observability": {
+    "enabled": true
+  }
+}

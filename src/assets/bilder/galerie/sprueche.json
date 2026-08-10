@@ -1,0 +1,4 @@
+{
+  "_hinweis": "Schlüssel ist der Dateiname aus diesem Ordner, ohne führende Sortierziffer und ohne Endung. Aus 03-radlader-am-haufen.jpg wird also radlader-am-haufen. Der Wert ist der Spruch, der neben dem Bild steht. Zeilen, die mit einem Unterstrich beginnen, werden ignoriert.",
+  "beispiel-dateiname-ohne-endung": "Hier steht der Spruch zum Bild."
+}

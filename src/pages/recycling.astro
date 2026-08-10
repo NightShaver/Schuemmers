@@ -1,0 +1,186 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Seitenkopf from '~/components/Seitenkopf.astro';
+import Bildrahmen from '~/components/Bildrahmen.astro';
+import Aktionsband from '~/components/Aktionsband.astro';
+import Knopf from '~/components/Knopf.astro';
+
+import { bild } from '~/lib/bilder';
+import { firma } from '~/lib/firma';
+
+const kopfBild = bild('recycling', 'gelaende');
+const hofBild = bild('gelaende', 'fuhrpark', 'hero');
+
+const stationen = [
+  {
+    titel: 'Annahme und Verwiegung',
+    text: 'Jede Anlieferung wird gewogen und der Abfallart zugeordnet. Damit steht schon am Eingang fest, welchen Weg das Material nimmt.',
+  },
+  {
+    titel: 'Vorsortierung durch den Umschlagbagger',
+    text: 'Große Störstoffe kommen zuerst heraus: Metall, Kunststoff, Dämmstoff, alles was den Brecher beschädigen oder das Endprodukt verunreinigen würde.',
+  },
+  {
+    titel: 'Separierung der Wertstoffe',
+    text: 'Holz, Metalle und verwertbare Fraktionen werden getrennt erfasst und gehen an spezialisierte Verwerter weiter.',
+  },
+  {
+    titel: 'Aufbereitung der Mineralik',
+    text: 'Beton, Ziegel und Bauschutt werden gebrochen und klassiert. Daraus entsteht Recyclingschotter für Trag- und Frostschutzschichten.',
+  },
+  {
+    titel: 'Entsorgung der Reste',
+    text: 'Was sich nicht verwerten lässt, geht auf dem vorgeschriebenen Weg zur Beseitigung, dokumentiert und nachweisbar.',
+  },
+];
+
+const schema = [
+  {
+    '@type': 'Service',
+    name: 'Recycling von Bau- und Abbruchabfällen',
+    serviceType: 'Abfallaufbereitung und Wertstoffrückgewinnung',
+    provider: { '@id': `${Astro.site}#betrieb` },
+    areaServed: 'Städteregion Aachen, Kreis Düren',
+  },
+];
+---
+
+<Basis
+  titel="Recyclinganlage Eschweiler | Schümmer"
+  beschreibung="Eigene Aufbereitungsanlage seit 2016 in Eschweiler. Aus Bauschutt wird wieder Baustoff, Wertstoffe bleiben im Kreislauf der Region."
+  brotkrumen={[{ name: 'Recycling', pfad: '/recycling' }]}
+  schema={schema}
+>
+  <Seitenkopf
+    titel="Verwertung vor Beseitigung"
+    text={`Seit ${firma.recyclingSeit} betreiben wir in Eschweiler eine eigene Aufbereitungsanlage. Aus dem, was Sie uns bringen, entsteht wieder Baustoff, statt auf einer Deponie zu verschwinden.`}
+    bild={kopfBild}
+    brotkrumen={[{ name: 'Recycling', pfad: '/recycling' }]}
+  />
+
+  {/* ---------- Prozess ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="max-w-[46rem]">
+      <h2 class="schrift-titel" data-auf>Der Weg über unseren Hof</h2>
+      <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+        Unsere Anlage zählt zu den modernsten im Raum Aachen. Fünf Stationen
+        liegen zwischen Waage und fertigem Recyclingschotter, jede entscheidet
+        mit, wie viel am Ende im Kreislauf bleibt.
+      </p>
+    </div>
+
+    <ol class="mt-14 grid gap-0">
+      {
+        stationen.map((station, i) => (
+          <li
+            class="grid gap-4 border-t border-[var(--linie)] py-8 last:border-b md:grid-cols-[6rem_minmax(0,1fr)] md:gap-10"
+            data-auf
+            style={`--verzug:${Math.min(i, 4)}`}
+          >
+            <span class="zahl text-3xl leading-none font-bold text-signal-500 md:text-4xl">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <div class="max-w-[60ch]">
+              <h3 class="schrift-sub text-[1.25rem] text-stark">{station.titel}</h3>
+              <p class="mt-3 leading-relaxed text-normal">{station.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {/* ---------- Wasser ---------- */}
+  <section class="bg-navy-950 py-20 text-navy-200 md:py-28">
+    <div class="huelle grid gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
+      <div>
+        <h2 class="schrift-titel text-white" data-auf>Wasser bleibt auf dem Hof</h2>
+        <p class="schrift-lead mt-6 text-navy-300" data-auf style="--verzug:1">
+          Eine Aufbereitungsanlage braucht Wasser, gegen Staub und für die
+          Fahrwege. Bei uns wird es getrennt erfasst, als Nutzwasser
+          aufbereitet und wiederverwendet, statt es ins Kanalnetz zu geben.
+        </p>
+
+        <ul class="mt-9 grid gap-5 sm:grid-cols-2">
+          {
+            [
+              {
+                icon: 'ph:drop-bold',
+                titel: 'Getrennte Erfassung',
+                text: 'Niederschlag und Prozesswasser laufen nicht in dieselbe Leitung.',
+              },
+              {
+                icon: 'ph:arrows-clockwise-bold',
+                titel: 'Wiederverwendung',
+                text: 'Aufbereitetes Nutzwasser bindet Staub und feuchtet Fahrwege an.',
+              },
+            ].map((punkt, i) => (
+              <li class="flex gap-4" data-auf style={`--verzug:${i + 2}`}>
+                <Icon name={punkt.icon} class="mt-0.5 size-6 shrink-0 text-signal-500" aria-hidden="true" />
+                <div>
+                  <h3 class="font-bold text-white">{punkt.titel}</h3>
+                  <p class="mt-1 text-[0.9rem] leading-relaxed text-navy-300">{punkt.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <Bildrahmen bild={hofBild} format="4/3" sizes="(min-width: 1024px) 46vw, 100vw" />
+    </div>
+  </section>
+
+  {/* ---------- Was angenommen wird ---------- */}
+  <section class="border-b border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle grid gap-12 lg:grid-cols-2 lg:gap-16">
+      <div>
+        <h2 class="schrift-titel" data-auf>Was wir aufbereiten</h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          Wir nehmen Material aus Handwerk, Industrie, Handel und von privaten
+          Haushalten an, angeliefert im eigenen Container oder selbst gebracht.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3" data-auf style="--verzug:2">
+          <Knopf href="/entsorgung" variante="signal" iconRechts="ph:arrow-right-bold">
+            Selbst anliefern
+          </Knopf>
+          <Knopf href="/baustoffe" variante="linie" iconRechts="ph:arrow-right-bold">
+            Recyclingschotter kaufen
+          </Knopf>
+        </div>
+      </div>
+
+      <ul class="grid gap-3 sm:grid-cols-2">
+        {
+          [
+            'Gemischte Bau- und Abbruchabfälle',
+            'Beton, Ziegel und Steine',
+            'Bitumenhaltige Asphaltdecken',
+            'Sand, Kies und Schotter',
+            'Erde und Aushub',
+            'Altholz',
+          ].map((eintrag, i) => (
+            <li
+              class="flex items-center gap-3 rounded-[var(--radius-sm)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] px-5 py-4 text-[0.95rem] font-bold text-stark"
+              data-auf
+              style={`--verzug:${i % 3}`}
+            >
+              <Icon
+                name="ph:check-bold"
+                class="size-4 shrink-0 text-signal-600 dark:text-signal-400"
+                aria-hidden="true"
+              />
+              {eintrag}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <Aktionsband
+    titel="Material anliefern oder abholen lassen"
+    text="Sagen Sie uns, was anfällt und wo es liegt. Wir stellen den Container oder nehmen es auf dem Hof an."
+  />
+</Basis>

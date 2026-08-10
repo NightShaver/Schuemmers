@@ -1,0 +1,704 @@
+---
+import { Icon } from 'astro-icon/components';
+import Containerbild from './Containerbild.astro';
+import { abfallarten } from '~/lib/daten/abfallarten';
+import { container, bauarten } from '~/lib/daten/container';
+import { orte } from '~/lib/daten/orte';
+import { firma, telefonHaupt } from '~/lib/firma';
+
+interface Props {
+  /** Ortsseiten geben ihren Ort vor, damit das Feld vorbelegt ist. */
+  vorgabeOrt?: string;
+  ueberschriftEbene?: 'h2' | 'h1';
+}
+
+const { vorgabeOrt, ueberschriftEbene: H = 'h2' } = Astro.props;
+
+// In der rein statischen Fassung (GitHub Pages) gibt es keinen Server, der
+// das Formular annehmen könnte. Dort öffnet der Absendeknopf stattdessen
+// das E-Mail-Programm mit fertiger Nachricht.
+const nurMail = process.env.SCHUEMMER_STATISCH === 'ja';
+
+const schritte = [
+  { nr: 1, kurz: 'Abfall' },
+  { nr: 2, kurz: 'Container' },
+  { nr: 3, kurz: 'Ort und Termin' },
+  { nr: 4, kurz: 'Kontakt' },
+];
+
+const feldKlasse =
+  'w-full rounded-[var(--radius-sm)] border border-[var(--linie-stark)] bg-[var(--flaeche-erhoben)] px-4 py-3 ' +
+  'text-[0.95rem] text-stark placeholder:text-[var(--text-leise)] transition-colors ' +
+  'focus:border-signal-500 focus:outline-none focus-visible:outline-none';
+const beschriftungKlasse = 'mb-2 block text-[0.85rem] font-bold tracking-tight text-stark';
+---
+
+<section id="konfigurator" class="scroll-mt-28">
+  <div class="overflow-hidden rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] shadow-[var(--schatten)]">
+    <div class="schraffur h-1.5" aria-hidden="true"></div>
+
+    <div class="border-b border-[var(--linie)] px-6 py-8 md:px-10 md:py-10">
+      <H class="schrift-titel">Container zusammenstellen</H>
+      <p class="schrift-lead mt-4 max-w-2xl text-normal">
+        Vier Angaben, dann wissen wir genug für ein belastbares Angebot. Meist
+        antworten wir noch am selben Werktag.
+      </p>
+    </div>
+
+    <form
+      id="konfig-form"
+      name="containeranfrage"
+      method="POST"
+      action="/api/anfrage"
+      data-nurmail={nurMail ? '' : undefined}
+      class="grid lg:grid-cols-[minmax(0,1fr)_360px]"
+    >
+      {/* Köderfeld gegen automatisches Ausfüllen. Für Menschen unsichtbar
+          und aus der Tabulatorreihenfolge genommen, für Screenreader als
+          optional erkennbar. */}
+      <p class="hidden" aria-hidden="true">
+        <label>
+          Dieses Feld bitte leer lassen
+          <input name="bot-feld" type="text" tabindex="-1" autocomplete="off" />
+        </label>
+      </p>
+
+      <div class="order-2 px-6 py-8 md:px-10 md:py-10 lg:order-1">
+        {/* Fortschritt. Zeigt, wo man steht, und erlaubt den Sprung zurück. */}
+        <ol id="konfig-fortschritt" class="mb-10 flex flex-wrap items-center gap-x-2 gap-y-3">
+          {
+            schritte.map((s) => (
+              <li class="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-springe-zu={s.nr}
+                  disabled={s.nr !== 1}
+                  class="group flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1 text-[0.8rem] font-bold tracking-tight transition-colors disabled:cursor-default"
+                >
+                  <span
+                    data-punkt
+                    class="zahl grid size-6 place-items-center rounded-[var(--radius-sm)] border border-[var(--linie-stark)] text-[0.72rem] text-[var(--text-leise)] transition-colors"
+                  >
+                    {s.nr}
+                  </span>
+                  <span data-punkt-text class="text-[var(--text-leise)] transition-colors">{s.kurz}</span>
+                </button>
+                {s.nr < 4 && (
+                  <span class="hidden h-px w-6 bg-[var(--linie-stark)] sm:block" aria-hidden="true" />
+                )}
+              </li>
+            ))
+          }
+        </ol>
+
+        {/* ---- Schritt 1: Abfallart ---- */}
+        <fieldset data-schritt="1">
+          <legend class="schrift-sub">Was soll in den Container?</legend>
+          <p class="mt-2 text-[0.95rem] text-normal">
+            Die Abfallart bestimmt die Größe stärker als die Menge. Schweres
+            Material braucht eine kleine Mulde, leichtes eine große.
+          </p>
+
+          <div class="mt-6 grid gap-3 sm:grid-cols-2">
+            {
+              abfallarten.map((a, i) => (
+                <label
+                  class="group relative flex cursor-pointer items-start gap-4 rounded-[var(--radius-sm)] border border-[var(--linie)] p-4 transition-[border-color,background-color] hover:border-[var(--linie-stark)] has-[:checked]:border-signal-500 has-[:checked]:bg-signal-500/8"
+                  data-auf
+                  style={`--verzug:${i % 4}`}
+                >
+                  <input
+                    type="radio"
+                    name="abfallart"
+                    value={a.name}
+                    data-abfall={a.id}
+                    data-empfehlung={a.empfehlung}
+                    data-verboten={a.gehoertNichtRein.join('|')}
+                    data-hinweis={a.hinweis ?? ''}
+                    required
+                    class="sr-only"
+                  />
+                  <Icon
+                    name={a.icon}
+                    class="mt-0.5 size-6 shrink-0 text-[var(--text-leise)] transition-colors group-has-[:checked]:text-signal-600 dark:group-has-[:checked]:text-signal-400"
+                    aria-hidden="true"
+                  />
+                  <span class="min-w-0">
+                    <span class="block text-[0.95rem] font-bold text-stark">{a.kurz}</span>
+                    <span class="mt-1 block text-[0.82rem] leading-snug text-[var(--text-leise)]">
+                      {a.gehoertRein.slice(0, 3).join(', ')}
+                    </span>
+                  </span>
+                </label>
+              ))
+            }
+          </div>
+        </fieldset>
+
+        {/* ---- Schritt 2: Container ---- */}
+        <fieldset data-schritt="2" hidden>
+          <legend class="schrift-sub">Welche Größe passt?</legend>
+          <p class="mt-2 text-[0.95rem] text-normal">
+            Wir zeigen nur Container, die für Ihre Abfallart in Frage kommen.
+            Unser Vorschlag ist markiert, Sie können ihn jederzeit ändern.
+          </p>
+
+          <div id="konfig-container-liste" class="mt-6 grid gap-3 sm:grid-cols-2">
+            {
+              container.map((c) => (
+                <label
+                  data-container-karte
+                  data-passt={c.passtZu.join(' ')}
+                  data-id={c.id}
+                  class="group relative cursor-pointer rounded-[var(--radius-sm)] border border-[var(--linie)] p-4 transition-[border-color,background-color] hover:border-[var(--linie-stark)] has-[:checked]:border-signal-500 has-[:checked]:bg-signal-500/8"
+                >
+                  <input
+                    type="radio"
+                    name="container"
+                    value={`${bauarten[c.bauart].name} ${String(c.volumen).replace('.', ',')} m³`}
+                    class="sr-only"
+                  />
+                  <span
+                    data-empfehlungs-fahne
+                    hidden
+                    class="absolute top-0 right-4 -translate-y-1/2 rounded-[var(--radius-sm)] bg-signal-500 px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-navy-950 uppercase"
+                  >
+                    Unser Vorschlag
+                  </span>
+
+                  <span class="flex items-baseline justify-between gap-3">
+                    <span class="zahl text-2xl font-bold text-stark">
+                      {String(c.volumen).replace('.', ',')}
+                      <span class="ml-0.5 text-sm font-bold text-[var(--text-leise)]">m³</span>
+                    </span>
+                    <span class="text-[0.72rem] font-bold tracking-[0.14em] text-[var(--text-leise)] uppercase">
+                      {bauarten[c.bauart].kurz}
+                    </span>
+                  </span>
+
+                  {/* Maßstabsgetreue Seitenansicht mit Person als Vergleich.
+                      Bei Auswahl färbt sie sich mit ein. */}
+                  <span class="mt-3 block">
+                    <Containerbild behaelter={c} />
+                  </span>
+
+                  <span class="mt-2 block text-[0.8rem] leading-snug text-[var(--text-leise)]">
+                    {c.typisch}
+                  </span>
+                </label>
+              ))
+            }
+          </div>
+
+          <p id="konfig-keine-container" hidden class="mt-6 text-[0.95rem] text-normal">
+            Für diese Abfallart stimmen wir den Behälter persönlich mit Ihnen ab.
+            Gehen Sie einfach weiter, wir melden uns mit einem Vorschlag.
+          </p>
+        </fieldset>
+
+        {/* ---- Schritt 3: Ort und Termin ---- */}
+        <fieldset data-schritt="3" hidden>
+          <legend class="schrift-sub">Wohin und ab wann?</legend>
+          <p class="mt-2 text-[0.95rem] text-normal">
+            Der Stellplatz entscheidet, welche Bauart wir schicken und ob eine
+            Genehmigung nötig wird.
+          </p>
+
+          <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="feld-ort" class={beschriftungKlasse}>Ort</label>
+              <select id="feld-ort" name="ort" class={feldKlasse}>
+                {
+                  orte.map((o) => (
+                    <option value={o.name} selected={vorgabeOrt === o.name}>
+                      {o.name}
+                    </option>
+                  ))
+                }
+                <option value="Anderer Ort">Anderer Ort</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="feld-strasse" class={beschriftungKlasse}>
+                Straße und Hausnummer <span class="font-medium text-[var(--text-leise)]">(optional)</span>
+              </label>
+              <input
+                id="feld-strasse"
+                name="strasse"
+                type="text"
+                autocomplete="street-address"
+                placeholder="Albertstraße 63a"
+                class={feldKlasse}
+              />
+            </div>
+
+            <div>
+              <label for="feld-termin" class={beschriftungKlasse}>Wunschtermin für die Lieferung</label>
+              <input id="feld-termin" name="termin" type="date" class={feldKlasse} />
+              <p class="mt-2 text-[0.8rem] text-[var(--text-leise)]">
+                Kein Termin bekannt? Feld frei lassen, wir schlagen etwas vor.
+              </p>
+            </div>
+
+            <div>
+              <span class={beschriftungKlasse}>Wo soll der Container stehen?</span>
+              <div class="grid gap-2">
+                {
+                  [
+                    { wert: 'Auf dem eigenen Grundstück', hinweis: 'keine Genehmigung nötig' },
+                    { wert: 'Auf öffentlichem Grund', hinweis: 'Genehmigung erforderlich' },
+                  ].map((option, i) => (
+                    <label class="flex cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] border border-[var(--linie)] px-4 py-3 transition-colors hover:border-[var(--linie-stark)] has-[:checked]:border-signal-500 has-[:checked]:bg-signal-500/8">
+                      <input
+                        type="radio"
+                        name="stellplatz"
+                        value={option.wert}
+                        checked={i === 0}
+                        class="size-4 shrink-0 accent-signal-500"
+                      />
+                      <span class="min-w-0">
+                        <span class="block text-[0.9rem] font-bold text-stark">{option.wert}</span>
+                        <span class="block text-[0.78rem] text-[var(--text-leise)]">{option.hinweis}</span>
+                      </span>
+                    </label>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        {/* ---- Schritt 4: Kontakt ---- */}
+        <fieldset data-schritt="4" hidden>
+          <legend class="schrift-sub">Wie erreichen wir Sie?</legend>
+          <p class="mt-2 text-[0.95rem] text-normal">
+            Für Rückfragen zur Zufahrt genügt oft ein kurzer Anruf. Deshalb ist
+            die Telefonnummer das wichtigste Feld.
+          </p>
+
+          <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="feld-name" class={beschriftungKlasse}>Name</label>
+              <input id="feld-name" name="name" type="text" required autocomplete="name" class={feldKlasse} />
+            </div>
+            <div>
+              <label for="feld-firma" class={beschriftungKlasse}>
+                Firma <span class="font-medium text-[var(--text-leise)]">(optional)</span>
+              </label>
+              <input id="feld-firma" name="firma" type="text" autocomplete="organization" class={feldKlasse} />
+            </div>
+            <div>
+              <label for="feld-telefon" class={beschriftungKlasse}>Telefon</label>
+              <input id="feld-telefon" name="telefon" type="tel" required autocomplete="tel" class={feldKlasse} />
+            </div>
+            <div>
+              <label for="feld-email" class={beschriftungKlasse}>E-Mail</label>
+              <input id="feld-email" name="email" type="email" required autocomplete="email" class={feldKlasse} />
+            </div>
+            <div class="sm:col-span-2">
+              <label for="feld-nachricht" class={beschriftungKlasse}>
+                Anmerkungen <span class="font-medium text-[var(--text-leise)]">(optional)</span>
+              </label>
+              <textarea
+                id="feld-nachricht"
+                name="nachricht"
+                rows="3"
+                placeholder="Enge Zufahrt, Container bitte rückwärts stellen, Abholung nach zwei Wochen"
+                class={`${feldKlasse} resize-y`}></textarea>
+            </div>
+          </div>
+
+          <label class="mt-6 flex cursor-pointer items-start gap-3 text-[0.85rem] leading-relaxed text-normal">
+            <input type="checkbox" name="datenschutz" required class="mt-1 size-4 shrink-0 accent-signal-500" />
+            <span>
+              Ich bin damit einverstanden, dass meine Angaben zur Bearbeitung
+              dieser Anfrage gespeichert und verarbeitet werden. Details in der{' '}
+              <a
+                href="/datenschutz"
+                class="font-bold text-stark underline decoration-signal-500 decoration-2 underline-offset-2"
+                >Datenschutzerklärung</a
+              >.
+            </span>
+          </label>
+        </fieldset>
+
+        {/* ---- Navigation ---- */}
+        <div class="mt-10 flex flex-wrap items-center gap-3 border-t border-[var(--linie)] pt-6">
+          <button
+            type="button"
+            id="konfig-zurueck"
+            hidden
+            class="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--linie-stark)] px-5 py-3 text-[0.95rem] font-bold text-stark transition-colors hover:bg-[var(--flaeche-gesenkt)]"
+          >
+            <Icon name="ph:arrow-left-bold" class="size-4" aria-hidden="true" />
+            Zurück
+          </button>
+
+          <button
+            type="button"
+            id="konfig-weiter"
+            class="group inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-signal-500 bg-signal-500 px-6 py-3 text-[0.95rem] font-bold text-navy-950 transition-colors hover:bg-signal-400 motion-safe:active:translate-y-px"
+          >
+            Weiter
+            <Icon
+              name="ph:arrow-right-bold"
+              class="size-4 transition-transform motion-safe:group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </button>
+
+          <button
+            type="submit"
+            id="konfig-senden"
+            hidden
+            class="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-signal-500 bg-signal-500 px-6 py-3 text-[0.95rem] font-bold text-navy-950 transition-colors hover:bg-signal-400 motion-safe:active:translate-y-px"
+          >
+            <Icon
+              name={nurMail ? 'ph:envelope-simple-bold' : 'ph:paper-plane-tilt-bold'}
+              class="size-4"
+              aria-hidden="true"
+            />
+            {nurMail ? 'Anfrage per E-Mail senden' : 'Anfrage absenden'}
+          </button>
+
+          {/* Zweiter Weg für alle, die kein Formular abschicken wollen oder
+              deren Absenden am Hoster scheitert. Die Auswahl steht dann
+              fertig formuliert im E-Mail-Programm. */}
+          <a
+            id="konfig-mail"
+            hidden={true}
+            data-immer-versteckt={nurMail ? '' : undefined}
+            data-adresse={firma.email}
+            href={`mailto:${firma.email}`}
+            class="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--linie-stark)] px-5 py-3 text-[0.95rem] font-bold text-stark transition-colors hover:bg-[var(--flaeche-gesenkt)]"
+          >
+            <Icon name="ph:envelope-simple-bold" class="size-4" aria-hidden="true" />
+            Stattdessen per E-Mail
+          </a>
+
+          <p id="konfig-fehler" role="alert" hidden class="w-full text-[0.9rem] font-bold text-red-700 dark:text-red-400"></p>
+        </div>
+      </div>
+
+      {/* ---- Zusammenfassung ---- */}
+      <aside
+        class="order-1 border-b border-[var(--linie)] bg-[var(--flaeche-gesenkt)] px-6 py-8 md:px-10 lg:order-2 lg:border-b-0 lg:border-l lg:px-8"
+        aria-label="Ihre Auswahl"
+      >
+        <div class="lg:sticky lg:top-28">
+          <h3 class="text-xs font-bold tracking-[0.2em] text-[var(--text-leise)] uppercase">Ihre Auswahl</h3>
+
+          <dl id="konfig-zusammenfassung" class="mt-5 space-y-4">
+            <div>
+              <dt class="text-[0.78rem] font-bold text-[var(--text-leise)]">Abfallart</dt>
+              <dd data-fasse="abfallart" class="text-[0.95rem] font-bold text-stark">Noch offen</dd>
+            </div>
+            <div>
+              <dt class="text-[0.78rem] font-bold text-[var(--text-leise)]">Container</dt>
+              <dd data-fasse="container" class="text-[0.95rem] font-bold text-stark">Noch offen</dd>
+            </div>
+            <div>
+              <dt class="text-[0.78rem] font-bold text-[var(--text-leise)]">Ort und Termin</dt>
+              <dd data-fasse="ort" class="text-[0.95rem] font-bold text-stark">Noch offen</dd>
+            </div>
+          </dl>
+
+          {/* Der teuerste Fehler ist die falsch befüllte Mulde. Deshalb steht
+              die Negativliste sichtbar neben der Auswahl, nicht im Fußtext. */}
+          <div
+            id="konfig-warnung"
+            hidden
+            class="mt-6 rounded-[var(--radius-sm)] border-l-[3px] border-signal-500 bg-[var(--flaeche-erhoben)] p-4"
+          >
+            <p class="flex items-center gap-2 text-[0.85rem] font-bold text-stark">
+              <Icon name="ph:warning-bold" class="size-4 shrink-0 text-signal-600 dark:text-signal-400" aria-hidden="true" />
+              Darf nicht hinein
+            </p>
+            <ul id="konfig-warnung-liste" class="mt-2 space-y-1 text-[0.82rem] leading-snug text-normal"></ul>
+            <p id="konfig-warnung-hinweis" hidden class="mt-3 text-[0.82rem] leading-snug text-normal"></p>
+          </div>
+
+          <div class="mt-8 border-t border-[var(--linie)] pt-6">
+            <p class="text-[0.85rem] leading-relaxed text-normal">
+              Lieber direkt sprechen? Wir sind {firma.oeffnungszeiten[0].tageKurz}
+              {' '}von {firma.oeffnungszeiten[0].von} bis {firma.oeffnungszeiten[0].bis} Uhr erreichbar.
+            </p>
+            <a
+              href={`tel:${telefonHaupt.wahl}`}
+              class="zahl mt-3 inline-flex items-center gap-2 text-lg font-bold text-stark transition-colors hover:text-signal-600 dark:hover:text-signal-400"
+            >
+              <Icon name="ph:phone-call-bold" class="size-5" aria-hidden="true" />
+              {telefonHaupt.anzeige}
+            </a>
+          </div>
+        </div>
+      </aside>
+    </form>
+  </div>
+</section>
+
+<style>
+  /* Die Zeichnung liegt in einer eigenen Komponente, deshalb muss die
+     Einfärbung der ausgewählten Karte global greifen. */
+  [data-container-karte]:has(:checked) :global([data-koerper] path),
+  [data-container-karte]:has(:checked) :global([data-koerper] rect) {
+    fill: var(--color-signal-500);
+    stroke: var(--color-signal-600);
+  }
+  [data-container-karte]:has(:checked) :global([data-koerper] circle),
+  [data-container-karte]:has(:checked) :global([data-koerper] line) {
+    stroke: var(--color-signal-600);
+  }
+  :global([data-koerper] path),
+  :global([data-koerper] rect),
+  :global([data-koerper] circle),
+  :global([data-koerper] line) {
+    transition:
+      fill 0.2s,
+      stroke 0.2s;
+  }
+</style>
+
+<script>
+  /**
+   * Konfigurator-Logik.
+   *
+   * Ohne JavaScript stehen alle vier Blöcke untereinander und das Formular
+   * funktioniert als normales Formular. Das Skript blendet die Blöcke
+   * nacheinander ein, filtert die Containerliste und pflegt die
+   * Zusammenfassung.
+   */
+  const form = document.getElementById('konfig-form') as HTMLFormElement | null;
+
+  if (form) {
+    const bloecke = Array.from(form.querySelectorAll<HTMLFieldSetElement>('[data-schritt]'));
+    const punkte = Array.from(form.querySelectorAll<HTMLButtonElement>('[data-springe-zu]'));
+    const zurueck = document.getElementById('konfig-zurueck') as HTMLButtonElement;
+    const weiter = document.getElementById('konfig-weiter') as HTMLButtonElement;
+    const senden = document.getElementById('konfig-senden') as HTMLButtonElement;
+    const mailKnopf = document.getElementById('konfig-mail') as HTMLAnchorElement;
+    const fehler = document.getElementById('konfig-fehler') as HTMLParagraphElement;
+    const karten = Array.from(form.querySelectorAll<HTMLLabelElement>('[data-container-karte]'));
+    const keineContainer = document.getElementById('konfig-keine-container') as HTMLParagraphElement;
+    const warnung = document.getElementById('konfig-warnung') as HTMLDivElement;
+    const warnungListe = document.getElementById('konfig-warnung-liste') as HTMLUListElement;
+    const warnungHinweis = document.getElementById('konfig-warnung-hinweis') as HTMLParagraphElement;
+
+    let aktiv = 1;
+    let hoechster = 1;
+
+    const fasse = (schluessel: string, text: string) => {
+      const ziel = form.querySelector<HTMLElement>(`[data-fasse="${schluessel}"]`);
+      if (!ziel) return;
+      ziel.textContent = text;
+      ziel.classList.toggle('text-stark', text !== 'Noch offen');
+      ziel.classList.toggle('text-[var(--text-leise)]', text === 'Noch offen');
+    };
+
+    function zeige(nr: number) {
+      aktiv = nr;
+      hoechster = Math.max(hoechster, nr);
+
+      bloecke.forEach((block) => {
+        block.hidden = Number(block.dataset.schritt) !== nr;
+      });
+
+      punkte.forEach((knopf) => {
+        const eigene = Number(knopf.dataset.springeZu);
+        knopf.disabled = eigene > hoechster;
+        const punkt = knopf.querySelector('[data-punkt]');
+        const text = knopf.querySelector('[data-punkt-text]');
+        const istAktiv = eigene === nr;
+        const erledigt = eigene < nr;
+        punkt?.classList.toggle('bg-signal-500', istAktiv || erledigt);
+        punkt?.classList.toggle('border-signal-500', istAktiv || erledigt);
+        punkt?.classList.toggle('text-navy-950', istAktiv || erledigt);
+        punkt?.classList.toggle('text-[var(--text-leise)]', !istAktiv && !erledigt);
+        text?.classList.toggle('text-stark', istAktiv);
+        text?.classList.toggle('text-[var(--text-leise)]', !istAktiv);
+      });
+
+      zurueck.hidden = nr === 1;
+      weiter.hidden = nr === 4;
+      senden.hidden = nr !== 4;
+      // In der statischen Fassung übernimmt der Absendeknopf den Mailweg,
+      // ein zweiter Knopf daneben wäre dann derselbe Weg doppelt.
+      mailKnopf.hidden = nr !== 4 || mailKnopf.dataset.immerVersteckt !== undefined;
+      if (nr === 4) mailtoAktualisieren();
+      fehler.hidden = true;
+    }
+
+    /** Baut aus allen Feldern eine fertige E-Mail als Rückfallweg. */
+    function mailtoAktualisieren() {
+      const daten = new FormData(form);
+      const beschriftungen: Record<string, string> = {
+        abfallart: 'Abfallart',
+        container: 'Container',
+        ort: 'Ort',
+        strasse: 'Straße',
+        termin: 'Wunschtermin',
+        stellplatz: 'Stellplatz',
+        name: 'Name',
+        firma: 'Firma',
+        telefon: 'Telefon',
+        email: 'E-Mail',
+        nachricht: 'Anmerkungen',
+      };
+
+      const zeilen = Object.entries(beschriftungen)
+        .map(([feld, beschriftung]) => {
+          const wert = String(daten.get(feld) ?? '').trim();
+          return wert ? `${beschriftung}: ${wert}` : null;
+        })
+        .filter(Boolean);
+
+      const betreff = `Containeranfrage${daten.get('ort') ? ` ${daten.get('ort')}` : ''}`;
+      const rumpf = ['Guten Tag,', '', 'ich möchte folgende Anfrage stellen:', '', ...zeilen, '', 'Mit freundlichen Grüßen'].join(
+        '\n',
+      );
+
+      mailKnopf.href = `mailto:${mailKnopf.dataset.adresse}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(rumpf)}`;
+    }
+
+    function pruefe(nr: number): boolean {
+      if (nr === 1) {
+        const gewaehlt = form.querySelector<HTMLInputElement>('input[name="abfallart"]:checked');
+        if (!gewaehlt) {
+          fehler.textContent = 'Bitte wählen Sie zuerst aus, was entsorgt werden soll.';
+          fehler.hidden = false;
+          return false;
+        }
+      }
+      if (nr === 2) {
+        const sichtbare = karten.filter((k) => !k.hidden);
+        const gewaehlt = form.querySelector<HTMLInputElement>('input[name="container"]:checked');
+        if (sichtbare.length > 0 && !gewaehlt) {
+          fehler.textContent = 'Bitte wählen Sie eine Containergröße.';
+          fehler.hidden = false;
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /* Abfallart gewählt: Liste filtern, Vorschlag setzen, Warnung füllen. */
+    form.querySelectorAll<HTMLInputElement>('input[name="abfallart"]').forEach((eingabe) => {
+      eingabe.addEventListener('change', () => {
+        const id = eingabe.dataset.abfall ?? '';
+        const empfehlung = eingabe.dataset.empfehlung ?? '';
+        fasse('abfallart', eingabe.value);
+
+        let sichtbar = 0;
+        karten.forEach((karte) => {
+          const passt = (karte.dataset.passt ?? '').split(' ').includes(id);
+          karte.hidden = !passt;
+          if (passt) sichtbar += 1;
+
+          const fahne = karte.querySelector<HTMLElement>('[data-empfehlungs-fahne]');
+          const radio = karte.querySelector<HTMLInputElement>('input[type="radio"]');
+          const istVorschlag = passt && karte.dataset.id === empfehlung;
+          if (fahne) fahne.hidden = !istVorschlag;
+          // Der Vorschlag rutscht an die erste Stelle, sonst steht er je
+          // nach Abfallart weit unten und wird beim Scrollen übersehen.
+          karte.style.order = istVorschlag ? '-1' : '0';
+          if (radio && istVorschlag) {
+            radio.checked = true;
+            fasse('container', radio.value);
+          }
+        });
+
+        keineContainer.hidden = sichtbar > 0;
+        if (sichtbar === 0) fasse('container', 'Wird persönlich abgestimmt');
+
+        const verboten = (eingabe.dataset.verboten ?? '').split('|').filter(Boolean);
+        const hinweis = eingabe.dataset.hinweis ?? '';
+        warnungListe.innerHTML = '';
+        verboten.forEach((eintrag) => {
+          const li = document.createElement('li');
+          li.textContent = eintrag;
+          li.className = 'flex gap-2 before:content-["×"] before:font-bold before:text-signal-600';
+          warnungListe.append(li);
+        });
+        warnungHinweis.textContent = hinweis;
+        warnungHinweis.hidden = hinweis === '';
+        warnung.hidden = verboten.length === 0 && hinweis === '';
+
+        if (aktiv === 1) zeige(2);
+      });
+    });
+
+    form.querySelectorAll<HTMLInputElement>('input[name="container"]').forEach((eingabe) => {
+      eingabe.addEventListener('change', () => fasse('container', eingabe.value));
+    });
+
+    /* Ort und Termin laufen in eine Zeile der Zusammenfassung. */
+    const ortFeld = form.querySelector<HTMLSelectElement>('select[name="ort"]');
+    const terminFeld = form.querySelector<HTMLInputElement>('input[name="termin"]');
+    const ortAktualisieren = () => {
+      const ort = ortFeld?.value ?? '';
+      const termin = terminFeld?.value
+        ? new Date(terminFeld.value).toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        : '';
+      fasse('ort', termin ? `${ort}, ab ${termin}` : ort || 'Noch offen');
+    };
+    ortFeld?.addEventListener('change', ortAktualisieren);
+    terminFeld?.addEventListener('change', ortAktualisieren);
+
+    weiter.addEventListener('click', () => {
+      if (!pruefe(aktiv)) return;
+      if (aktiv === 2) ortAktualisieren();
+      zeige(Math.min(aktiv + 1, 4));
+    });
+
+    zurueck.addEventListener('click', () => zeige(Math.max(aktiv - 1, 1)));
+
+    punkte.forEach((knopf) => {
+      knopf.addEventListener('click', () => {
+        const ziel = Number(knopf.dataset.springeZu);
+        if (ziel <= hoechster) zeige(ziel);
+      });
+    });
+
+    /* Statische Fassung ohne Server: das Absenden öffnet das
+       E-Mail-Programm und leitet danach auf die Dankeseite. */
+    if (form.dataset.nurmail !== undefined) {
+      form.addEventListener('submit', (ereignis) => {
+        ereignis.preventDefault();
+        if (!form.reportValidity()) return;
+        mailtoAktualisieren();
+        window.location.href = mailKnopf.href;
+        window.setTimeout(() => {
+          window.location.href = '/danke';
+        }, 1200);
+      });
+    }
+
+    // Die Rückfall-E-Mail muss die zuletzt getippten Kontaktdaten enthalten.
+    form.addEventListener('input', () => {
+      if (aktiv === 4) mailtoAktualisieren();
+    });
+
+    // Enter in einem Textfeld soll weiterblättern, nicht vorzeitig absenden.
+    form.addEventListener('keydown', (ereignis) => {
+      const ziel = ereignis.target as HTMLElement;
+      if (ereignis.key === 'Enter' && ziel.tagName === 'INPUT' && aktiv !== 4) {
+        ereignis.preventDefault();
+        weiter.click();
+      }
+    });
+
+    // Frühester wählbarer Termin ist morgen.
+    if (terminFeld) {
+      const morgen = new Date();
+      morgen.setDate(morgen.getDate() + 1);
+      terminFeld.min = morgen.toISOString().slice(0, 10);
+    }
+
+    zeige(1);
+  }
+</script>

@@ -1,0 +1,87 @@
+---
+import { Icon } from 'astro-icon/components';
+import { firma, telefonHaupt } from '~/lib/firma';
+
+/**
+ * Rückmeldung nach dem Absenden des Formulars. Die Route /api/anfrage
+ * leitet mit einem Status in der Adresse zurück, etwa
+ * /kontakt?status=fehler.
+ *
+ * Die Kontaktseite ist vorgerendertes HTML und kennt den Status beim
+ * Bauen nicht. Deshalb stehen alle Varianten versteckt im Dokument und
+ * ein kurzes Skript blendet die passende ein.
+ */
+
+const meldungen = [
+  {
+    status: 'fehler',
+    titel: 'Die Anfrage konnte nicht verschickt werden',
+    text: `Das liegt an uns, nicht an Ihnen. Rufen Sie bitte kurz an oder schreiben Sie an ${firma.email}, dann nehmen wir die Anfrage direkt auf.`,
+    ton: 'fehler' as const,
+  },
+  {
+    status: 'unvollstaendig',
+    titel: 'Es fehlen noch Angaben',
+    text: 'Name, Telefonnummer, E-Mail-Adresse und die Einwilligung zur Datenverarbeitung brauchen wir, um antworten zu dürfen. Bitte ergänzen Sie die Felder und senden Sie noch einmal ab.',
+    ton: 'hinweis' as const,
+  },
+];
+---
+
+<div id="statusmeldungen" class="mb-8" hidden>
+  {
+    meldungen.map((meldung) => (
+      <div
+        data-status={meldung.status}
+        hidden
+        role="alert"
+        class:list={[
+          'rounded-[var(--radius-md)] border-l-[4px] bg-[var(--flaeche-erhoben)] p-6 shadow-[var(--schatten)]',
+          meldung.ton === 'fehler' ? 'border-red-600' : 'border-signal-500',
+        ]}
+      >
+        <div class="flex items-start gap-4">
+          <Icon
+            name={meldung.ton === 'fehler' ? 'ph:warning-octagon-bold' : 'ph:info-bold'}
+            class:list={[
+              'mt-0.5 size-6 shrink-0',
+              meldung.ton === 'fehler'
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-signal-600 dark:text-signal-400',
+            ]}
+            aria-hidden="true"
+          />
+          <div>
+            <p class="font-bold text-stark">{meldung.titel}</p>
+            <p class="mt-2 leading-relaxed text-normal">{meldung.text}</p>
+            {meldung.ton === 'fehler' && (
+              <a
+                href={`tel:${telefonHaupt.wahl}`}
+                class="zahl mt-4 inline-flex items-center gap-2 font-bold text-stark underline decoration-signal-500 decoration-2 underline-offset-4"
+              >
+                <Icon name="ph:phone-call-bold" class="size-4" aria-hidden="true" />
+                {telefonHaupt.anzeige}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<script>
+  const status = new URLSearchParams(location.search).get('status');
+  const behaelter = document.getElementById('statusmeldungen');
+
+  if (status && behaelter) {
+    const meldung = behaelter.querySelector<HTMLElement>(`[data-status="${CSS.escape(status)}"]`);
+    if (meldung) {
+      behaelter.hidden = false;
+      meldung.hidden = false;
+      behaelter.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      // Ein Neuladen soll die Meldung nicht erneut zeigen.
+      history.replaceState(null, '', location.pathname + location.hash);
+    }
+  }
+</script>

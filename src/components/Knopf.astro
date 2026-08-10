@@ -1,0 +1,68 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  href: string;
+  variante?: 'signal' | 'navy' | 'linie' | 'geist';
+  groesse?: 'normal' | 'gross';
+  icon?: string;
+  iconRechts?: string;
+  extern?: boolean;
+  class?: string;
+  'data-auf'?: string;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  variante = 'signal',
+  groesse = 'normal',
+  icon,
+  iconRechts,
+  extern = false,
+  class: extraKlasse = '',
+  ...rest
+} = Astro.props;
+
+const basis =
+  'group inline-flex items-center justify-center gap-2.5 rounded-[var(--radius-sm)] font-bold tracking-tight ' +
+  'whitespace-nowrap transition-[transform,background-color,border-color,color] duration-200 ' +
+  'motion-safe:active:translate-y-px';
+
+const groessen = {
+  normal: 'px-5 py-3 text-[0.95rem]',
+  gross: 'px-7 py-4 text-base md:text-lg',
+};
+
+// Kontrast gegen den jeweiligen Hintergrund ist hier festgelegt und nicht
+// pro Einsatzort, damit kein heller Knopf auf heller Fläche landet.
+const varianten = {
+  signal:
+    'bg-signal-500 text-navy-950 hover:bg-signal-400 border border-signal-500 hover:border-signal-400',
+  navy: 'bg-navy-900 text-white hover:bg-navy-800 border border-navy-900 hover:border-navy-800 dark:bg-white dark:text-navy-950 dark:hover:bg-navy-100 dark:border-white',
+  linie:
+    'border border-[var(--linie-stark)] text-stark hover:border-navy-900 hover:bg-[var(--flaeche-gesenkt)] dark:hover:border-signal-400',
+  geist: 'border border-white/30 text-white hover:bg-white/10 hover:border-white/60',
+};
+
+const externAttribute = extern ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+
+<a
+  href={href}
+  class:list={[basis, groessen[groesse], varianten[variante], extraKlasse]}
+  {...externAttribute}
+  {...rest}
+>
+  {icon && <Icon name={icon} class="size-5 shrink-0" aria-hidden="true" />}
+  <slot />
+  {
+    iconRechts && (
+      <Icon
+        name={iconRechts}
+        class="size-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5"
+        aria-hidden="true"
+      />
+    )
+  }
+</a>

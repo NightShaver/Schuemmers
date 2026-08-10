@@ -1,0 +1,246 @@
+---
+import { Icon } from 'astro-icon/components';
+import { Picture } from 'astro:assets';
+import { bilderAus, alleBilder } from '~/lib/bilder';
+
+interface Props {
+  titel?: string;
+  einleitung?: string;
+}
+
+const {
+  titel = 'Einblicke vom Betriebshof',
+  einleitung = 'Fahrzeuge, Anlage, Material. Ein Rundgang über das Gelände an der Albertstraße.',
+} = Astro.props;
+
+/**
+ * Sprüche zu den Bildern. Liegen in derselben Ablage wie die Fotos, damit
+ * beides zusammen gepflegt werden kann:
+ * `src/assets/bilder/galerie/sprueche.json`
+ *
+ * Schlüssel ist der Dateiname ohne führende Sortierziffer und ohne Endung,
+ * also für `03-radlader-am-haufen.jpg` der Schlüssel
+ * `radlader-am-haufen`.
+ */
+const spruchDateien = import.meta.glob<{ default: Record<string, string> }>(
+  '/src/assets/bilder/galerie/sprueche.json',
+  { eager: true },
+);
+const sprueche: Record<string, string> = Object.values(spruchDateien)[0]?.default ?? {};
+
+// Solange der Galerieordner leer ist, laufen alle vorhandenen Fotos durch.
+const galerie = bilderAus('galerie');
+const bilder = (galerie.length > 0 ? galerie : alleBilder()).slice(0, 12);
+
+const folien = bilder.map((bild) => ({
+  bild,
+  spruch: sprueche[bild.schluessel] ?? '',
+}));
+---
+
+{
+  folien.length > 0 && (
+    <section
+      class="relative"
+      aria-roledescription="Karussell"
+      aria-label={titel}
+      data-galerie
+      data-anzahl={folien.length}
+    >
+      <div class="max-w-[46rem]">
+        <h2 class="schrift-titel" data-auf>
+          {titel}
+        </h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          {einleitung}
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:gap-0" data-auf>
+        {/* Bildstapel. Alle Folien liegen übereinander, sichtbar ist immer
+            genau eine. Ohne JavaScript bleibt die erste stehen. */}
+        <div class="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-md)] bg-[var(--flaeche-gesenkt)] lg:aspect-[16/11] lg:rounded-r-none">
+          {folien.map((folie, i) => (
+            <div
+              data-folie={i}
+              class="absolute inset-0 opacity-0 transition-opacity duration-700 data-[aktiv]:opacity-100 motion-reduce:transition-none"
+              aria-hidden={i === 0 ? 'false' : 'true'}
+              data-aktiv={i === 0 ? '' : undefined}
+            >
+              <Picture
+                src={folie.bild.quelle}
+                alt={folie.bild.alt}
+                width={1440}
+                widths={[480, 720, 1024, 1440]}
+                sizes="(min-width: 1024px) 60vw, 100vw"
+                formats={['avif', 'webp']}
+                fallbackFormat="jpg"
+                quality={68}
+                loading="lazy"
+                class="size-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Spruchtafel. Die Zahl links zeigt, an welcher Stelle man ist. */}
+        <div class="flex flex-col rounded-[var(--radius-md)] bg-navy-950 p-7 text-navy-200 md:p-9 lg:rounded-l-none">
+          <div class="flex flex-1 flex-col justify-center">
+            <Icon name="ph:quotes-bold" class="size-8 text-signal-500" aria-hidden="true" />
+
+            <div class="mt-6" aria-live="polite">
+              {folien.map((folie, i) => (
+                <div data-text={i} hidden={i !== 0}>
+                  <p class="text-xl leading-snug font-bold text-white text-balance md:text-2xl">
+                    {folie.spruch || folie.bild.alt}
+                  </p>
+                  {folie.spruch && (
+                    <p class="mt-4 text-[0.88rem] leading-snug text-navy-400">{folie.bild.alt}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="mt-8 flex items-center justify-between gap-6">
+            {/* Punkte zum direkten Anspringen. */}
+            <div class="flex flex-wrap gap-2" role="tablist" aria-label="Bild auswählen">
+              {folien.map((folie, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  data-punkt={i}
+                  aria-selected={i === 0 ? 'true' : 'false'}
+                  aria-label={`Bild ${i + 1} von ${folien.length}`}
+                  class="h-1.5 w-7 rounded-full bg-white/25 transition-colors aria-selected:bg-signal-500"
+                />
+              ))}
+            </div>
+
+            <div class="flex shrink-0 gap-2">
+              <button
+                type="button"
+                data-zurueck
+                aria-label="Vorheriges Bild"
+                class="grid size-10 place-items-center rounded-[var(--radius-sm)] border border-white/20 text-white transition-colors hover:border-signal-500"
+              >
+                <Icon name="ph:arrow-left-bold" class="size-4" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                data-vor
+                aria-label="Nächstes Bild"
+                class="grid size-10 place-items-center rounded-[var(--radius-sm)] border border-white/20 text-white transition-colors hover:border-signal-500"
+              >
+                <Icon name="ph:arrow-right-bold" class="size-4" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<script>
+  /**
+   * Galerie. Wechselt von selbst weiter, hält aber an, sobald jemand mit
+   * der Maus darüber ist, ein Knopf den Fokus hat oder der Besucher die
+   * Steuerung benutzt. Wer wenig Bewegung eingestellt hat, bekommt gar
+   * keinen automatischen Wechsel.
+   */
+  const TAKT = 6000;
+
+  document.querySelectorAll<HTMLElement>('[data-galerie]').forEach((galerie) => {
+    const anzahl = Number(galerie.dataset.anzahl ?? 0);
+    if (anzahl < 2) return;
+
+    const folien = galerie.querySelectorAll<HTMLElement>('[data-folie]');
+    const texte = galerie.querySelectorAll<HTMLElement>('[data-text]');
+    const punkte = galerie.querySelectorAll<HTMLButtonElement>('[data-punkt]');
+    const sparsam = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let aktuell = 0;
+    let uhr: ReturnType<typeof setInterval> | undefined;
+    let angehalten = false;
+
+    function zeige(index: number) {
+      aktuell = (index + anzahl) % anzahl;
+      folien.forEach((folie, i) => {
+        const ist = i === aktuell;
+        folie.toggleAttribute('data-aktiv', ist);
+        folie.setAttribute('aria-hidden', ist ? 'false' : 'true');
+      });
+      texte.forEach((text, i) => {
+        text.hidden = i !== aktuell;
+      });
+      punkte.forEach((punkt, i) => {
+        punkt.setAttribute('aria-selected', i === aktuell ? 'true' : 'false');
+      });
+    }
+
+    function starten() {
+      if (uhr || angehalten || sparsam.matches) return;
+      uhr = setInterval(() => zeige(aktuell + 1), TAKT);
+    }
+
+    function stoppen() {
+      if (!uhr) return;
+      clearInterval(uhr);
+      uhr = undefined;
+    }
+
+    /** Nach einer Eingabe läuft die Zeit von vorn, nicht mitten im Takt weiter. */
+    function neuTakten() {
+      stoppen();
+      starten();
+    }
+
+    galerie.querySelector('[data-vor]')?.addEventListener('click', () => {
+      zeige(aktuell + 1);
+      neuTakten();
+    });
+    galerie.querySelector('[data-zurueck]')?.addEventListener('click', () => {
+      zeige(aktuell - 1);
+      neuTakten();
+    });
+    punkte.forEach((punkt, i) =>
+      punkt.addEventListener('click', () => {
+        zeige(i);
+        neuTakten();
+      }),
+    );
+
+    galerie.addEventListener('pointerenter', () => {
+      angehalten = true;
+      stoppen();
+    });
+    galerie.addEventListener('pointerleave', () => {
+      angehalten = false;
+      starten();
+    });
+    galerie.addEventListener('focusin', () => {
+      angehalten = true;
+      stoppen();
+    });
+    galerie.addEventListener('focusout', () => {
+      if (galerie.contains(document.activeElement)) return;
+      angehalten = false;
+      starten();
+    });
+
+    // Im Hintergrundtab weiterzuzählen kostet nur Rechenzeit.
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stoppen();
+      else starten();
+    });
+
+    sparsam.addEventListener('change', () => (sparsam.matches ? stoppen() : starten()));
+
+    // Läuft nur, solange die Galerie überhaupt im Bild ist.
+    new IntersectionObserver(
+      ([eintrag]) => (eintrag.isIntersecting ? starten() : stoppen()),
+      { threshold: 0.2 },
+    ).observe(galerie);
+  });
+</script>

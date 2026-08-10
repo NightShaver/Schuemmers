@@ -1,0 +1,27 @@
+# Abhängigkeiten, werden über package-lock.json wiederhergestellt
+node_modules/
+
+# Ergebnis des Builds, entsteht bei jedem Bauen neu
+dist/
+
+# Zwischenspeicher von Astro und Wrangler
+.astro/
+.wrangler/
+.vercel/
+.netlify/
+
+# Umgebungsvariablen, falls später welche dazukommen
+.env
+.env.*
+!.env.beispiel
+
+# Betriebssystem und Editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Interne Notizen und Anleitungen bleiben lokal
+*.md

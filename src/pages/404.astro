@@ -1,0 +1,40 @@
+---
+import Basis from '~/layouts/Basis.astro';
+import Knopf from '~/components/Knopf.astro';
+import { leistungen } from '~/lib/daten/leistungen';
+---
+
+<Basis
+  titel="Seite nicht gefunden"
+  beschreibung="Diese Seite gibt es nicht mehr. Hier geht es zurück zu Containern, Baustoffen und Kontakt."
+  keinIndex
+>
+  <section class="huelle py-24 md:py-36">
+    <div class="max-w-[52rem]">
+      <p class="zahl text-6xl font-bold text-signal-500 md:text-7xl">404</p>
+      <h1 class="schrift-display mt-6 text-stark">Diese Seite gibt es nicht.</h1>
+      <p class="schrift-lead mt-7 max-w-[48ch] text-normal">
+        Vielleicht hat sich die Adresse geändert. Hier kommen Sie weiter.
+      </p>
+
+      <ul class="mt-10 grid gap-3 sm:grid-cols-2">
+        {
+          leistungen.map((l) => (
+            <li>
+              <a
+                href={l.pfad}
+                class="flex items-center justify-between gap-4 rounded-[var(--radius-sm)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] px-5 py-4 font-bold text-stark transition-colors hover:border-signal-500"
+              >
+                {l.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="mt-10">
+        <Knopf href="/" variante="signal" iconRechts="ph:arrow-right-bold">Zur Startseite</Knopf>
+      </div>
+    </div>
+  </section>
+</Basis>

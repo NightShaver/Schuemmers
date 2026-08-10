@@ -1,0 +1,138 @@
+---
+import { Icon } from 'astro-icon/components';
+import Marke from './Marke.astro';
+import Knopf from './Knopf.astro';
+import { leistungen } from '~/lib/daten/leistungen';
+import { telefonHaupt } from '~/lib/firma';
+
+const pfad = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+const navigation = [
+  ...leistungen.map((l) => ({ name: l.navName, pfad: l.pfad })),
+  { name: 'Über uns', pfad: '/ueber-uns' },
+];
+
+function istAktiv(ziel: string) {
+  return pfad === ziel || pfad.startsWith(`${ziel}/`);
+}
+---
+
+<a
+  href="#inhalt"
+  class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-[var(--radius-sm)] focus:bg-signal-500 focus:px-4 focus:py-2 focus:font-bold focus:text-navy-950"
+>
+  Zum Inhalt springen
+</a>
+
+<header
+  id="kopf"
+  class="sticky top-0 z-50 border-b border-[var(--linie)] bg-[var(--flaeche)]/85 backdrop-blur-md transition-shadow duration-300 data-[gescrollt]:shadow-[0_1px_0_var(--linie),0_10px_30px_-20px_rgb(3_17_29/0.5)]"
+>
+  <div class="huelle flex h-[72px] items-center justify-between gap-4">
+    <Marke class="shrink-0" />
+
+    <nav aria-label="Hauptnavigation" class="hidden lg:block">
+      <ul class="flex items-center gap-0.5">
+        {
+          navigation.map((punkt) => (
+            <li>
+              <a
+                href={punkt.pfad}
+                aria-current={istAktiv(punkt.pfad) ? 'page' : undefined}
+                class:list={[
+                  'relative rounded-[var(--radius-sm)] px-3 py-2 text-[0.92rem] font-semibold transition-colors',
+                  'after:absolute after:inset-x-3 after:-bottom-px after:h-[3px] after:origin-left after:scale-x-0 after:bg-signal-500 after:transition-transform after:duration-200',
+                  'hover:text-stark hover:after:scale-x-100',
+                  istAktiv(punkt.pfad)
+                    ? 'text-stark after:scale-x-100'
+                    : 'text-normal',
+                ]}
+              >
+                {punkt.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex shrink-0 items-center gap-2">
+      <button
+        type="button"
+        id="modus-schalter"
+        class="grid size-10 place-items-center rounded-[var(--radius-sm)] border border-[var(--linie)] text-normal transition-colors hover:text-stark"
+        aria-label="Zwischen hellem und dunklem Erscheinungsbild wechseln"
+      >
+        <Icon name="ph:sun-bold" class="hidden size-5 dark:block" aria-hidden="true" />
+        <Icon name="ph:moon-bold" class="size-5 dark:hidden" aria-hidden="true" />
+      </button>
+
+      <a
+        href={`tel:${telefonHaupt.wahl}`}
+        class="hidden items-center gap-2 rounded-[var(--radius-sm)] px-3 py-2 text-[0.95rem] font-bold text-stark transition-colors hover:text-signal-600 md:inline-flex dark:hover:text-signal-400"
+      >
+        <Icon name="ph:phone-call-bold" class="size-[1.15rem]" aria-hidden="true" />
+        <span class="zahl tracking-tight">{telefonHaupt.anzeige}</span>
+      </a>
+
+      {/* Der Wrapper blendet aus, nicht der Knopf selbst: eine
+          display-Utility am Knopf würde gegen dessen eigenes inline-flex
+          verlieren, je nachdem welche Regel im Stylesheet später steht. */}
+      <div class="hidden sm:block">
+        <Knopf href="/kontakt" variante="signal">Container anfragen</Knopf>
+      </div>
+
+      <button
+        type="button"
+        id="menue-schalter"
+        class="grid size-10 place-items-center rounded-[var(--radius-sm)] border border-[var(--linie)] text-stark lg:hidden"
+        aria-expanded="false"
+        aria-controls="mobilmenue"
+        aria-label="Menü öffnen"
+      >
+        <Icon name="ph:list-bold" class="size-6" aria-hidden="true" />
+      </button>
+    </div>
+  </div>
+
+  {/* Mobiles Menü. Liegt im Dokumentfluss unter dem Header, damit der
+      Fokus beim Öffnen nicht aus dem Header herausspringt. */}
+  <div
+    id="mobilmenue"
+    hidden
+    class="border-t border-[var(--linie)] bg-[var(--flaeche-erhoben)] lg:hidden"
+  >
+    <nav aria-label="Menü" class="huelle py-4">
+      <ul class="grid gap-1">
+        {
+          navigation.map((punkt) => (
+            <li>
+              <a
+                href={punkt.pfad}
+                aria-current={istAktiv(punkt.pfad) ? 'page' : undefined}
+                class:list={[
+                  'flex items-center justify-between rounded-[var(--radius-sm)] px-4 py-3.5 text-base font-bold transition-colors',
+                  istAktiv(punkt.pfad)
+                    ? 'bg-[var(--flaeche-gesenkt)] text-stark'
+                    : 'text-normal hover:bg-[var(--flaeche-gesenkt)] hover:text-stark',
+                ]}
+              >
+                {punkt.name}
+                <Icon name="ph:caret-right-bold" class="size-4 opacity-40" aria-hidden="true" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="mt-4 grid gap-2 border-t border-[var(--linie)] pt-4 sm:grid-cols-2">
+        <Knopf href="/kontakt" variante="signal" icon="ph:shipping-container-bold">
+          Container anfragen
+        </Knopf>
+        <Knopf href={`tel:${telefonHaupt.wahl}`} variante="linie" icon="ph:phone-call-bold">
+          {telefonHaupt.anzeige}
+        </Knopf>
+      </div>
+    </nav>
+  </div>
+</header>

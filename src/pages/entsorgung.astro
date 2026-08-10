@@ -1,0 +1,253 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Seitenkopf from '~/components/Seitenkopf.astro';
+import Faqliste from '~/components/Faqliste.astro';
+import Aktionsband from '~/components/Aktionsband.astro';
+import Knopf from '~/components/Knopf.astro';
+import Karte from '~/components/Karte.astro';
+
+import { bild } from '~/lib/bilder';
+import { abfallarten } from '~/lib/daten/abfallarten';
+import { fragenFuer } from '~/lib/daten/faq';
+import { firma, kartenLink, adresseEinzeilig } from '~/lib/firma';
+
+const kopfBild = bild('gelaende', 'recycling', 'hero');
+const entsorgungsfragen = fragenFuer('entsorgung');
+
+const ablauf = [
+  {
+    titel: 'Anmelden an der Waage',
+    text: 'Sie fahren auf die Waage und sagen, was Sie dabei haben. Bei gewerblicher Anlieferung nehmen wir die Betriebsdaten auf.',
+  },
+  {
+    titel: 'Abladen an der zugewiesenen Box',
+    text: 'Unsere Leute weisen Sie ein. Sortenrein getrenntes Material geht direkt in die richtige Box.',
+  },
+  {
+    titel: 'Zurück über die Waage',
+    text: 'Die Differenz ergibt das angelieferte Gewicht. Danach bekommen Sie den Wiegeschein.',
+  },
+];
+
+const schema = [
+  {
+    '@type': 'Service',
+    name: 'Abfallannahme und Entsorgung',
+    serviceType: 'Annahme, Transport und Entsorgung von Abfällen',
+    provider: { '@id': `${Astro.site}#betrieb` },
+    areaServed: 'Städteregion Aachen, Kreis Düren',
+  },
+  {
+    '@type': 'FAQPage',
+    mainEntity: entsorgungsfragen.map((f) => ({
+      '@type': 'Question',
+      name: f.frage,
+      acceptedAnswer: { '@type': 'Answer', text: f.antwort },
+    })),
+  },
+];
+---
+
+<Basis
+  titel="Abfall entsorgen in Eschweiler | Schümmer"
+  beschreibung="Recyclinghof in Eschweiler mit Annahme für Haushalt, Handwerk und Gewerbe. Verwiegung auf geeichter Waage, vollständige Nachweisführung."
+  brotkrumen={[{ name: 'Entsorgung', pfad: '/entsorgung' }]}
+  schema={schema}
+>
+  <Seitenkopf
+    titel="Abfall abgeben, Nachweis bekommen"
+    text="Selbst anliefern auf dem Recyclinghof oder abholen lassen im Container. In beiden Fällen läuft die Dokumentation über uns."
+    bild={kopfBild}
+    brotkrumen={[{ name: 'Entsorgung', pfad: '/entsorgung' }]}
+  />
+
+  {/* ---------- Zwei Wege ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="grid gap-4 md:grid-cols-2">
+      <article
+        class="flex flex-col rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-8 md:p-10"
+        data-auf
+      >
+        <Icon name="ph:car-bold" class="size-8 text-signal-600 dark:text-signal-400" aria-hidden="true" />
+        <h2 class="schrift-sub mt-5 text-[1.35rem] text-stark">Selbst anliefern</h2>
+        <p class="mt-4 leading-relaxed text-normal">
+          Für Privatkunden und Gewerbe. Sie fahren auf den Hof, wir wiegen, Sie
+          laden ab. Abgerechnet wird nach Gewicht.
+        </p>
+        <ol class="mt-7 space-y-5 border-t border-[var(--linie)] pt-6">
+          {
+            ablauf.map((schritt, i) => (
+              <li class="flex gap-4">
+                <span class="zahl mt-0.5 grid size-7 shrink-0 place-items-center rounded-[var(--radius-sm)] bg-signal-500 text-[0.8rem] font-bold text-navy-950">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 class="font-bold text-stark">{schritt.titel}</h3>
+                  <p class="mt-1 text-[0.92rem] leading-relaxed text-normal">{schritt.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="mt-7 border-l-[3px] border-signal-500 bg-[var(--flaeche-gesenkt)] p-4 text-[0.9rem] leading-relaxed text-normal">
+          {firma.hinweisWaage}. Wer später kommt, kann nicht mehr abladen.
+        </p>
+      </article>
+
+      <article
+        class="flex flex-col rounded-[var(--radius-md)] border border-transparent bg-navy-900 p-8 text-navy-200 md:p-10"
+        data-auf
+        style="--verzug:1"
+      >
+        <Icon name="ph:shipping-container-bold" class="size-8 text-signal-500" aria-hidden="true" />
+        <h2 class="schrift-sub mt-5 text-[1.35rem] text-white">Abholen lassen</h2>
+        <p class="mt-4 leading-relaxed text-navy-300">
+          Wir stellen den Container, Sie befüllen ihn in Ihrem Tempo, wir holen
+          ihn ab. Für laufende Baustellen richten wir feste Wechseltermine ein.
+        </p>
+        <ul class="mt-7 space-y-3 border-t border-white/10 pt-6">
+          {
+            [
+              'Fünfzehn Größen von 1,8 bis 40 m³',
+              'Wechsel oder Abholung nach Absprache',
+              'Übernahme gefährlicher Abfälle mit elektronischem Nachweis',
+              'Sortierung nach Gewerbeabfallverordnung',
+            ].map((punkt) => (
+              <li class="flex gap-3 text-[0.95rem] text-navy-200">
+                <Icon name="ph:check-bold" class="mt-1 size-4 shrink-0 text-signal-500" aria-hidden="true" />
+                {punkt}
+              </li>
+            ))
+          }
+        </ul>
+        <div class="mt-auto pt-8">
+          <Knopf href="/container" variante="signal" iconRechts="ph:arrow-right-bold">
+            Container ansehen
+          </Knopf>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  {/* ---------- Abfallarten ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle">
+      <div class="max-w-[46rem]">
+        <h2 class="schrift-titel" data-auf>Welche Abfälle wir übernehmen</h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          Sortenrein getrennt ist fast immer günstiger als gemischt. Was in
+          welche Kategorie gehört, steht hier.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {
+          abfallarten.map((a, i) => (
+            <article
+              class="rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-6"
+              data-auf
+              style={`--verzug:${i % 3}`}
+            >
+              <Icon
+                name={a.icon}
+                class="size-7 text-signal-600 dark:text-signal-400"
+                aria-hidden="true"
+              />
+              <h3 class="mt-4 text-[1.05rem] font-bold text-stark">{a.name}</h3>
+              <p class="mt-2 text-[0.9rem] leading-relaxed text-normal">{a.beschreibung}</p>
+              <p class="mt-4 border-t border-[var(--linie)] pt-3 text-[0.82rem] leading-snug text-[var(--text-leise)]">
+                {a.gehoertRein.join(', ')}
+              </p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Nachweise ---------- */}
+  <section class="bg-navy-950 py-20 text-navy-200 md:py-28">
+    <div class="huelle grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+      <div>
+        <h2 class="schrift-titel text-white" data-auf>Papierkram, den wir übernehmen</h2>
+        <p class="schrift-lead mt-6 text-navy-300" data-auf style="--verzug:1">
+          Als zertifizierter Entsorgungsfachbetrieb sind wir verpflichtet, jeden
+          Abfallstrom nachvollziehbar zu dokumentieren. Für Sie heißt das: Sie
+          bekommen die Nachweise, ohne sich mit den Formularen zu befassen.
+        </p>
+      </div>
+
+      <ul class="grid gap-4">
+        {
+          [
+            {
+              titel: 'Elektronisches Nachweisverfahren',
+              text: 'Für gefährliche Abfälle vorgeschrieben. Wir führen die Nachweise elektronisch und binden Sie nur dort ein, wo Ihre Signatur nötig ist.',
+            },
+            {
+              titel: 'Gewerbeabfallverordnung',
+              text: 'Wer gewerblich Bauabfall erzeugt, muss trennen oder eine Vorbehandlung nachweisen. Wir dokumentieren, was mit Ihrem Material passiert ist.',
+            },
+            {
+              titel: 'Wiegescheine und Belege',
+              text: 'Jede Anlieferung und jede Abholung ist verwogen und belegt. Sie können jederzeit nachvollziehen, welche Menge wann angefallen ist.',
+            },
+          ].map((punkt, i) => (
+            <li
+              class="rounded-[var(--radius-md)] border border-white/10 p-6"
+              data-auf
+              style={`--verzug:${i + 1}`}
+            >
+              <h3 class="text-lg font-bold text-white">{punkt.titel}</h3>
+              <p class="mt-2 text-[0.92rem] leading-relaxed text-navy-300">{punkt.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------- Anfahrt ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:gap-16">
+      <div>
+        <h2 class="schrift-titel" data-auf>Recyclinghof Eschweiler</h2>
+        <address class="mt-6 text-lg leading-relaxed not-italic text-stark" data-auf style="--verzug:1">
+          {firma.strasse}<br />
+          {firma.plz} {firma.ort}
+        </address>
+
+        <dl class="mt-8 space-y-3" data-auf style="--verzug:2">
+          {
+            firma.oeffnungszeiten.map((z) => (
+              <div class="flex items-baseline justify-between gap-6 border-b border-[var(--linie)] pb-3">
+                <dt class="text-normal">{z.tage}</dt>
+                <dd class="zahl font-bold text-stark">{z.zeit}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="mt-4 text-[0.9rem] text-[var(--text-leise)]">{firma.hinweisWaage}</p>
+
+        <div class="mt-8" data-auf style="--verzug:3">
+          <Knopf href={kartenLink} variante="linie" extern icon="ph:navigation-arrow-bold">
+            Route planen
+          </Knopf>
+        </div>
+      </div>
+
+      <div data-auf style="--verzug:2">
+        <Karte hoehe="h-[24rem] lg:h-full lg:min-h-[26rem]" />
+      </div>
+    </div>
+  </section>
+
+  <section class="border-t border-[var(--linie)]">
+    <div class="huelle py-20 md:py-28">
+      <Faqliste fragen={entsorgungsfragen} titel="Fragen zur Entsorgung" />
+    </div>
+  </section>
+
+  <Aktionsband />
+</Basis>

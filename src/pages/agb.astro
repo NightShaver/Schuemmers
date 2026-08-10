@@ -1,0 +1,59 @@
+---
+import { Icon } from 'astro-icon/components';
+import Rechtstext from '~/layouts/Rechtstext.astro';
+import Knopf from '~/components/Knopf.astro';
+import { firma } from '~/lib/firma';
+---
+
+<Rechtstext
+  titel="Allgemeine Geschäftsbedingungen"
+  beschreibung={`Allgemeine Geschäftsbedingungen der ${firma.nameLang} für Containergestellung, Entsorgung und Baustofflieferung.`}
+  ueberschrift="Allgemeine Geschäftsbedingungen"
+  einleitung="Für alle Aufträge gelten unsere Allgemeinen Geschäftsbedingungen in der jeweils gültigen Fassung."
+>
+  <div
+    class="not-prose flex flex-col gap-5 rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-7 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div class="flex items-start gap-4">
+      <Icon
+        name="ph:file-pdf-bold"
+        class="mt-0.5 size-8 shrink-0 text-signal-600 dark:text-signal-400"
+        aria-hidden="true"
+      />
+      <div>
+        <p class="font-bold text-stark">Allgemeine Geschäftsbedingungen als PDF</p>
+        <p class="mt-1 text-[0.9rem] text-normal">
+          Die verbindliche Fassung zum Herunterladen und Ausdrucken.
+        </p>
+      </div>
+    </div>
+    <Knopf
+      href="/dokumente/agb-schuemmer.pdf"
+      variante="signal"
+      extern
+      icon="ph:download-simple-bold"
+      class="shrink-0"
+    >
+      PDF öffnen
+    </Knopf>
+  </div>
+
+  <h2>Geltung</h2>
+  <p>
+    Die Allgemeinen Geschäftsbedingungen der {firma.nameLang} gelten für alle
+    Angebote, Lieferungen und Leistungen, insbesondere für die Gestellung von
+    Containern, die Übernahme und Entsorgung von Abfällen sowie die Lieferung
+    von Baustoffen. Maßgeblich ist die im verlinkten PDF hinterlegte Fassung.
+  </p>
+
+  <h2>Fragen zu einzelnen Punkten</h2>
+  <p>
+    Wenn Sie zu einer Regelung eine Frage haben, etwa zu Standzeiten,
+    Wartezeiten, Überladung oder zur Abrechnung nach Gewicht, rufen Sie uns an.
+    Wir erklären Ihnen die Bedingung, bevor Sie den Auftrag erteilen.
+  </p>
+  <p>
+    Telefon: <a href={`tel:${firma.telefone[0].wahl}`}>{firma.telefone[0].anzeige}</a><br />
+    E-Mail: <a href={`mailto:${firma.email}`}>{firma.email}</a>
+  </p>
+</Rechtstext>

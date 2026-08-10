@@ -1,0 +1,135 @@
+---
+import Rechtstext from '~/layouts/Rechtstext.astro';
+import { firma } from '~/lib/firma';
+---
+
+<Rechtstext
+  titel="Datenschutzerklärung"
+  beschreibung="Informationen zur Verarbeitung personenbezogener Daten auf dieser Website nach Datenschutz-Grundverordnung."
+  ueberschrift="Datenschutzerklärung"
+  einleitung="Diese Seite beschreibt, welche Daten beim Besuch dieser Website anfallen, wofür wir sie verwenden und welche Rechte Sie haben."
+>
+  <h2>Verantwortlicher</h2>
+  <p>
+    {firma.nameLang}<br />
+    {firma.strasse}<br />
+    {firma.plz} {firma.ort}<br />
+    Telefon: <a href={`tel:${firma.telefone[0].wahl}`}>{firma.telefone[0].anzeige}</a><br />
+    E-Mail: <a href={`mailto:${firma.email}`}>{firma.email}</a>
+  </p>
+
+  <h2>Grundsatz</h2>
+  <p>
+    Diese Website ist so gebaut, dass sie mit möglichst wenig Daten auskommt.
+    Sie setzt keine Werbe- oder Analyse-Cookies, bindet keine
+    Reichweitenmessung ein und übermittelt Ihre Daten nicht zu Werbezwecken an
+    Dritte.
+  </p>
+
+  <h2>Zugriffsdaten beim Aufruf der Website</h2>
+  <p>
+    Beim Aufruf dieser Website übermittelt Ihr Browser technisch notwendige
+    Daten an den Server unseres Hosters. Dazu gehören in der Regel IP-Adresse,
+    Datum und Uhrzeit des Zugriffs, die aufgerufene Seite, die zuvor besuchte
+    Seite sowie Angaben zu Browser und Betriebssystem. Diese Daten werden zur
+    Auslieferung der Seite und zur Abwehr von Angriffen verarbeitet.
+  </p>
+  <p>
+    Rechtsgrundlage ist Artikel 6 Absatz 1 Buchstabe f
+    Datenschutz-Grundverordnung. Unser berechtigtes Interesse liegt im sicheren
+    und störungsfreien Betrieb der Website.
+  </p>
+
+  <h2>Kontaktaufnahme und Anfrageformular</h2>
+  <p>
+    Wenn Sie uns über das Formular, per E-Mail oder telefonisch kontaktieren,
+    verarbeiten wir die von Ihnen gemachten Angaben, um Ihre Anfrage zu
+    bearbeiten. Beim Container-Formular sind das insbesondere Abfallart,
+    gewünschte Containergröße, Einsatzort, Wunschtermin, Name, Telefonnummer
+    und E-Mail-Adresse sowie freiwillige Zusatzangaben.
+  </p>
+  <p>
+    Rechtsgrundlage ist Artikel 6 Absatz 1 Buchstabe b
+    Datenschutz-Grundverordnung, soweit die Anfrage auf den Abschluss oder die
+    Durchführung eines Vertrages gerichtet ist, im Übrigen Artikel 6 Absatz 1
+    Buchstabe f Datenschutz-Grundverordnung.
+  </p>
+  <p>
+    Anfragen werden gelöscht, sobald sie abschließend bearbeitet sind und keine
+    gesetzlichen Aufbewahrungsfristen entgegenstehen. Für Geschäftsvorgänge
+    gelten die handels- und steuerrechtlichen Aufbewahrungsfristen von sechs
+    beziehungsweise zehn Jahren.
+  </p>
+
+  <h2>Speicherung im Browser</h2>
+  <p>
+    Diese Website speichert eine einzige Einstellung lokal in Ihrem Browser: ob
+    Sie die helle oder die dunkle Darstellung gewählt haben. Dieser Wert wird
+    nicht an uns übertragen und dient ausschließlich der Darstellung. Sie können
+    ihn jederzeit löschen, indem Sie die Websitedaten in Ihrem Browser
+    entfernen.
+  </p>
+
+  <h2>Kartendarstellung</h2>
+  <p>
+    Auf den Seiten Kontakt und Entsorgung binden wir eine Karte von
+    OpenStreetMap ein. Beim Laden der Karte stellt Ihr Browser eine Verbindung
+    zu den Servern der OpenStreetMap Foundation her und übermittelt dabei Ihre
+    IP-Adresse. Wir haben keinen Einfluss auf diese Verarbeitung. Weitere
+    Informationen finden Sie in der Datenschutzerklärung der OpenStreetMap
+    Foundation unter{' '}
+    <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer"
+      >osmfoundation.org/wiki/Privacy_Policy</a
+    >.
+  </p>
+  <p>
+    Rechtsgrundlage ist Artikel 6 Absatz 1 Buchstabe f
+    Datenschutz-Grundverordnung. Unser berechtigtes Interesse liegt darin,
+    Ihnen die Anfahrt zu unserem Betriebshof verständlich darzustellen.
+  </p>
+
+  <h2>Verlinkung externer Bestellportale</h2>
+  <p>
+    An mehreren Stellen verlinken wir auf Bestellportale von Partnern. Diese
+    Links werden erst durch Ihren Klick aktiv. Ab dem Aufruf gelten die
+    Datenschutzbestimmungen des jeweiligen Anbieters.
+  </p>
+
+  <h2>Empfänger von Daten</h2>
+  <p>
+    Für Betrieb und Auslieferung dieser Website setzen wir einen Hosting-Dienstleister
+    ein, der als Auftragsverarbeiter nach Artikel 28 Datenschutz-Grundverordnung
+    für uns tätig wird. Darüber hinaus geben wir Ihre Daten nur weiter, wenn dies
+    zur Vertragserfüllung erforderlich ist oder wir gesetzlich dazu verpflichtet
+    sind.
+  </p>
+
+  <h2>Ihre Rechte</h2>
+  <p>Sie haben nach der Datenschutz-Grundverordnung folgende Rechte:</p>
+  <ul>
+    <li>Auskunft über die zu Ihrer Person verarbeiteten Daten, Artikel 15</li>
+    <li>Berichtigung unrichtiger Daten, Artikel 16</li>
+    <li>Löschung, Artikel 17</li>
+    <li>Einschränkung der Verarbeitung, Artikel 18</li>
+    <li>Datenübertragbarkeit, Artikel 20</li>
+    <li>Widerspruch gegen eine Verarbeitung auf Grundlage berechtigter Interessen, Artikel 21</li>
+  </ul>
+  <p>
+    Für die Ausübung dieser Rechte genügt eine formlose Nachricht an{' '}
+    <a href={`mailto:${firma.email}`}>{firma.email}</a>.
+  </p>
+
+  <h2>Beschwerderecht bei der Aufsichtsbehörde</h2>
+  <p>
+    Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu
+    beschweren. Zuständig ist die Landesbeauftragte für Datenschutz und
+    Informationsfreiheit Nordrhein-Westfalen, Kavalleriestraße 2 bis 4, 40213
+    Düsseldorf.
+  </p>
+
+  <h2>Stand</h2>
+  <p>
+    Diese Datenschutzerklärung beschreibt den technischen Stand dieser Website.
+    Ändert sich die Website, passen wir den Text an.
+  </p>
+</Rechtstext>

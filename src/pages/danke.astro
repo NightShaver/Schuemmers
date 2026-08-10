@@ -1,0 +1,41 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Knopf from '~/components/Knopf.astro';
+import { firma, telefonHaupt } from '~/lib/firma';
+---
+
+<Basis
+  titel="Anfrage eingegangen"
+  beschreibung="Ihre Anfrage ist bei uns angekommen. Wir melden uns meist am selben Werktag."
+  keinIndex
+>
+  <section class="huelle py-24 md:py-36">
+    <div class="max-w-[52rem]">
+      <Icon name="ph:check-circle-bold" class="size-14 text-signal-500" aria-hidden="true" />
+
+      <h1 class="schrift-display mt-8 text-stark">Angekommen.</h1>
+
+      <p class="schrift-lead mt-7 max-w-[52ch] text-normal">
+        Wir schauen uns Ihre Angaben an und melden uns mit einem konkreten
+        Angebot, in der Regel noch am selben Werktag.
+      </p>
+
+      <div class="mt-10 rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-7">
+        <h2 class="text-lg font-bold text-stark">Eilig?</h2>
+        <p class="mt-2 leading-relaxed text-normal">
+          Rufen Sie an, dann klären wir es sofort. Erreichbar
+          {' '}{firma.oeffnungszeiten[0].tageKurz} von {firma.oeffnungszeiten[0].von} bis
+          {' '}{firma.oeffnungszeiten[0].bis} Uhr und {firma.oeffnungszeiten[1].tageKurz} von
+          {' '}{firma.oeffnungszeiten[1].von} bis {firma.oeffnungszeiten[1].bis} Uhr.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <Knopf href={`tel:${telefonHaupt.wahl}`} variante="signal" icon="ph:phone-call-bold">
+            <span class="zahl">{telefonHaupt.anzeige}</span>
+          </Knopf>
+          <Knopf href="/" variante="linie" iconRechts="ph:arrow-right-bold">Zurück zur Startseite</Knopf>
+        </div>
+      </div>
+    </div>
+  </section>
+</Basis>

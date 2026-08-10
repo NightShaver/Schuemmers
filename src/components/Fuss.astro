@@ -1,0 +1,141 @@
+---
+import { Icon } from 'astro-icon/components';
+import Marke from './Marke.astro';
+import Karte from './Karte.astro';
+import { leistungen } from '~/lib/daten/leistungen';
+import { orte } from '~/lib/daten/orte';
+import { firma, telefonHaupt, kartenLink, adresseEinzeilig } from '~/lib/firma';
+
+const jahr = new Date().getFullYear();
+---
+
+<footer class="bg-navy-950 text-navy-200">
+  <div class="schraffur h-2" aria-hidden="true"></div>
+
+  <div class="huelle py-16 md:py-20">
+    <div class="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+      <div>
+        <Marke hell />
+        <p class="mt-6 max-w-xs text-[0.95rem] leading-relaxed text-navy-300">
+          Entsorgungsfachbetrieb für die Städteregion Aachen, den Kreis Düren und
+          das Umland. Seit {firma.gegruendet} in Familienhand.
+        </p>
+        <address class="mt-6 not-italic">
+          <a
+            href={kartenLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group inline-flex items-start gap-3 text-[0.95rem] text-navy-200 transition-colors hover:text-white"
+          >
+            <Icon name="ph:map-pin-bold" class="mt-0.5 size-5 shrink-0 text-signal-500" aria-hidden="true" />
+            <span>
+              {firma.strasse}<br />
+              {firma.plz}&#160;{firma.ort}
+            </span>
+          </a>
+        </address>
+
+        {/* Anfahrt direkt im Fußbereich. Wer die Seite von unten liest,
+            sucht meistens genau das. */}
+        <Karte dunkel knapp hoehe="h-56" class="mt-6 max-w-sm" />
+      </div>
+
+      <nav aria-labelledby="fuss-leistungen">
+        <h2 id="fuss-leistungen" class="text-xs font-bold tracking-[0.2em] text-signal-500 uppercase">
+          Leistungen
+        </h2>
+        <ul class="mt-5 space-y-3">
+          {
+            leistungen.map((l) => (
+              <li>
+                <a href={l.pfad} class="text-[0.95rem] text-navy-200 transition-colors hover:text-white">
+                  {l.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <nav aria-labelledby="fuss-orte">
+        <h2 id="fuss-orte" class="text-xs font-bold tracking-[0.2em] text-signal-500 uppercase">
+          Einsatzgebiet
+        </h2>
+        <ul class="mt-5 space-y-3">
+          {
+            orte.map((o) => (
+              <li>
+                <a
+                  href={`/containerdienst/${o.slug}`}
+                  class="text-[0.95rem] text-navy-200 transition-colors hover:text-white"
+                >
+                  Container {o.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div>
+        <h2 class="text-xs font-bold tracking-[0.2em] text-signal-500 uppercase">Kontakt</h2>
+
+        <ul class="mt-5 space-y-3 text-[0.95rem]">
+          {
+            firma.telefone.map((t) => (
+              <li class="flex items-center gap-3">
+                <Icon name="ph:phone-bold" class="size-4 shrink-0 text-navy-400" aria-hidden="true" />
+                <a href={`tel:${t.wahl}`} class="zahl font-bold text-white transition-colors hover:text-signal-400">
+                  {t.anzeige}
+                </a>
+              </li>
+            ))
+          }
+          <li class="flex items-center gap-3">
+            <Icon name="ph:envelope-simple-bold" class="size-4 shrink-0 text-navy-400" aria-hidden="true" />
+            <a
+              href={`mailto:${firma.email}`}
+              class="break-all text-navy-200 transition-colors hover:text-white"
+            >
+              {firma.email}
+            </a>
+          </li>
+        </ul>
+
+        <h3 class="mt-8 text-xs font-bold tracking-[0.2em] text-signal-500 uppercase">Öffnungszeiten</h3>
+        <dl class="mt-4 space-y-2 text-[0.95rem]">
+          {
+            firma.oeffnungszeiten.map((z) => (
+              <div class="flex items-baseline justify-between gap-4 border-b border-white/10 pb-2">
+                <dt class="text-navy-300">{z.tageKurz}</dt>
+                <dd class="zahl font-bold text-white">
+                  {z.von} bis {z.bis}
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+        <p class="mt-3 text-[0.8rem] leading-snug text-navy-400">{firma.hinweisWaage}</p>
+      </div>
+    </div>
+
+    <div
+      class="mt-14 flex flex-col gap-6 border-t border-white/10 pt-8 text-[0.85rem] md:flex-row md:items-center md:justify-between"
+    >
+      <p class="text-navy-400">© {jahr} {firma.nameLang}</p>
+      <nav aria-label="Rechtliches">
+        <ul class="flex flex-wrap gap-x-7 gap-y-2">
+          <li><a href="/impressum" class="text-navy-300 transition-colors hover:text-white">Impressum</a></li>
+          <li><a href="/datenschutz" class="text-navy-300 transition-colors hover:text-white">Datenschutz</a></li>
+          <li><a href="/agb" class="text-navy-300 transition-colors hover:text-white">AGB</a></li>
+          <li>
+            <a href={`tel:${telefonHaupt.wahl}`} class="font-bold text-signal-400 transition-colors hover:text-signal-300">
+              {telefonHaupt.anzeige}
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <p class="sr-only">{adresseEinzeilig}</p>
+  </div>
+</footer>

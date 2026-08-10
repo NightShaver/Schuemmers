@@ -1,0 +1,117 @@
+---
+import { Icon } from 'astro-icon/components';
+import { pressestimmenSortiert, datumLesbar } from '~/lib/daten/presse';
+
+interface Props {
+  titel?: string;
+  einleitung?: string;
+  /** Begrenzt die Ausgabe, etwa für eine Vorschau auf der Startseite. */
+  hoechstens?: number;
+  /** Verweis auf die vollständige Liste, wenn gekürzt wurde. */
+  mehrPfad?: string;
+}
+
+const {
+  titel = 'In der Presse',
+  einleitung = 'Was über den Betrieb geschrieben wurde.',
+  hoechstens,
+  mehrPfad,
+} = Astro.props;
+
+const alle = pressestimmenSortiert();
+const stimmen = hoechstens ? alle.slice(0, hoechstens) : alle;
+const gekuerzt = hoechstens !== undefined && alle.length > hoechstens;
+---
+
+{
+  stimmen.length > 0 ? (
+    <div>
+      <div class="max-w-[46rem]">
+        <h2 class="schrift-titel" data-auf>
+          {titel}
+        </h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          {einleitung}
+        </p>
+      </div>
+
+      <ul class="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {stimmen.map((stimme, i) => {
+          const ziel = stimme.link ?? stimme.datei;
+          const istDatei = !stimme.link && Boolean(stimme.datei);
+          return (
+            <li data-auf style={`--verzug:${i % 3}`}>
+              <article class="flex h-full flex-col rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-7">
+                <div class="flex items-baseline justify-between gap-4">
+                  <p class="text-[0.82rem] font-bold tracking-wide text-signal-600 uppercase dark:text-signal-400">
+                    {stimme.quelle}
+                  </p>
+                  <time datetime={stimme.datum} class="zahl shrink-0 text-[0.78rem] text-[var(--text-leise)]">
+                    {datumLesbar(stimme.datum)}
+                  </time>
+                </div>
+
+                <h3 class="mt-4 text-[1.15rem] leading-snug font-bold text-stark">{stimme.titel}</h3>
+
+                <blockquote class="mt-3 border-l-[3px] border-[var(--linie-stark)] pl-4 text-[0.95rem] leading-relaxed text-normal">
+                  {stimme.auszug}
+                </blockquote>
+
+                {ziel && (
+                  <a
+                    href={ziel}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group mt-auto inline-flex items-center gap-2 pt-6 text-[0.9rem] font-bold text-stark"
+                  >
+                    {istDatei ? 'Artikel als PDF' : 'Artikel lesen'}
+                    <Icon
+                      name={istDatei ? 'ph:file-pdf-bold' : 'ph:arrow-square-out-bold'}
+                      class="size-4 transition-transform motion-safe:group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </a>
+                )}
+              </article>
+            </li>
+          );
+        })}
+      </ul>
+
+      {gekuerzt && mehrPfad && (
+        <div class="mt-10" data-auf>
+          <a
+            href={mehrPfad}
+            class="group inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--linie-stark)] px-5 py-3 text-[0.95rem] font-bold text-stark transition-colors hover:bg-[var(--flaeche-erhoben)]"
+          >
+            Alle {alle.length} Berichte
+            <Icon
+              name="ph:arrow-right-bold"
+              class="size-4 transition-transform motion-safe:group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </a>
+        </div>
+      )}
+    </div>
+  ) : (
+    import.meta.env.DEV && (
+      /* Nur im Entwicklungsserver sichtbar. Auf der veröffentlichten Seite
+         verschwindet der Bereich vollständig, solange nichts eingetragen
+         ist. */
+      <div class="rounded-[var(--radius-md)] border border-dashed border-[var(--linie-stark)] bg-[var(--flaeche-gesenkt)] p-8">
+        <p class="font-bold text-stark">Pressebereich, noch ohne Einträge</p>
+        <p class="mt-2 max-w-[60ch] leading-relaxed text-normal">
+          Sobald in <span class="font-mono text-[0.9em]">src/lib/daten/presse.ts</span> der erste
+          Eintrag steht, erscheint hier eine Kartenreihe mit Quelle, Datum,
+          Überschrift, Zitat und Verweis auf den Artikel. Die Vorlage für einen
+          Eintrag steht als Kommentar in derselben Datei.
+        </p>
+        <p class="mt-3 text-[0.88rem] text-[var(--text-leise)]">
+          Dieser Hinweis erscheint nur im Entwicklungsserver, nie auf der
+          veröffentlichten Seite.
+        </p>
+      </div>
+    )
+  )
+}

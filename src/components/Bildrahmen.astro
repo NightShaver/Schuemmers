@@ -1,0 +1,79 @@
+---
+import { Picture } from 'astro:assets';
+import type { Bild } from '~/lib/bilder';
+
+interface Props {
+  bild?: Bild;
+  /** Seitenverhältnis als CSS-Wert, etwa "16/10". */
+  format?: string;
+  /** Nur beim ersten Bild über der Falz setzen. */
+  vorrang?: boolean;
+  breiten?: number[];
+  sizes?: string;
+  class?: string;
+  /** Beschriftung unter dem Bild, wenn sie echten Inhalt trägt. */
+  beschriftung?: string;
+}
+
+const {
+  bild,
+  format = '16/10',
+  vorrang = false,
+  breiten = [480, 720, 1024, 1440, 1800],
+  sizes = '(min-width: 1024px) 50vw, 100vw',
+  class: extraKlasse = '',
+  beschriftung,
+} = Astro.props;
+
+// Ohne eigene Breite nimmt Astro für das Rückfallbild die Originaldatei.
+// Bei Kamerafotos mit 8000 Pixeln Kantenlänge wären das mehrere Megabyte
+// für Browser, die weder AVIF noch WebP können. Deshalb wird das
+// Rückfallbild hier ausdrücklich auf die größte ausgespielte Breite begrenzt.
+const groessteBreite = Math.max(...breiten);
+const rueckfallBreite = bild ? Math.min(groessteBreite, bild.quelle.width) : groessteBreite;
+---
+
+{
+  bild ? (
+    <figure class:list={['m-0', extraKlasse]}>
+      <div
+        class="relative overflow-hidden rounded-[var(--radius-md)] bg-[var(--flaeche-gesenkt)]"
+        style={`aspect-ratio:${format}`}
+      >
+        <Picture
+          src={bild.quelle}
+          alt={bild.alt}
+          width={rueckfallBreite}
+          widths={breiten}
+          sizes={sizes}
+          formats={['avif', 'webp']}
+          fallbackFormat="jpg"
+          quality={68}
+          loading={vorrang ? 'eager' : 'lazy'}
+          fetchpriority={vorrang ? 'high' : 'auto'}
+          decoding={vorrang ? 'sync' : 'async'}
+          class="absolute inset-0 size-full object-cover"
+        />
+      </div>
+      {beschriftung && (
+        <figcaption class="mt-3 text-[0.85rem] text-[var(--text-leise)]">{beschriftung}</figcaption>
+      )}
+    </figure>
+  ) : (
+    /* Kein Bild im Ordner: sichtbarer Platzhalter statt stiller Lücke.
+       Sobald eine Datei in src/assets/bilder/ liegt, verschwindet er. */
+    <div
+      class:list={[
+        'grid place-items-center rounded-[var(--radius-md)] border border-dashed border-[var(--linie-stark)] bg-[var(--flaeche-gesenkt)] p-6 text-center',
+        extraKlasse,
+      ]}
+      style={`aspect-ratio:${format}`}
+    >
+      <p class="max-w-[22rem] text-[0.85rem] leading-relaxed text-[var(--text-leise)]">
+        Hier fehlt noch ein Foto. Datei in den passenden Ordner unter
+        <span class="font-mono">src/assets/bilder/</span> legen, dann erscheint sie
+        automatisch an dieser Stelle.
+      </p>
+    </div>
+  )
+}

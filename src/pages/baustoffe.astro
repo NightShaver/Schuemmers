@@ -1,0 +1,186 @@
+---
+import { Icon } from 'astro-icon/components';
+import Basis from '~/layouts/Basis.astro';
+import Seitenkopf from '~/components/Seitenkopf.astro';
+import Bildrahmen from '~/components/Bildrahmen.astro';
+import Faqliste from '~/components/Faqliste.astro';
+import Aktionsband from '~/components/Aktionsband.astro';
+import Knopf from '~/components/Knopf.astro';
+
+import { bild } from '~/lib/bilder';
+import { baustoffgruppen, anzahlBaustoffe } from '~/lib/daten/baustoffe';
+import { fragenFuer } from '~/lib/daten/faq';
+import { firma } from '~/lib/firma';
+
+const kopfBild = bild('baustoffe', 'fuhrpark', 'hero');
+const lieferBild = bild('fuhrpark', 'gelaende', 'hero');
+const baustofffragen = fragenFuer('baustoffe');
+
+const lieferwege = [
+  {
+    icon: 'ph:truck-trailer-bold',
+    titel: 'Lose auf dem Kipper',
+    text: 'Ab einem Kubikmeter liefern wir bis vor die Haustür, auf Wunsch bis in den Garten.',
+  },
+  {
+    icon: 'ph:bag-bold',
+    titel: 'Im BigBag',
+    text: 'Für kleinere Mengen und enge Grundstücke. Wird abgesetzt und steht trocken, bis Sie ihn verarbeiten.',
+  },
+  {
+    icon: 'ph:package-bold',
+    titel: 'Als Sackware zum Mitnehmen',
+    text: 'Erde, Kompost und Rindenmulch in 40 und 70 Liter Gebinden. Direkt am Betriebshof zu holen.',
+  },
+];
+
+const schema = [
+  {
+    '@type': 'Service',
+    name: 'Baustoffhandel',
+    serviceType: 'Lieferung von Schüttgütern und Baustoffen',
+    provider: { '@id': `${Astro.site}#betrieb` },
+    areaServed: 'Städteregion Aachen, Kreis Düren',
+  },
+];
+---
+
+<Basis
+  titel="Baustoffe kaufen in Eschweiler | Schümmer"
+  beschreibung="Kies, Sand, Splitt, Mutterboden, Rindenmulch und Recyclingschotter ab Lager. Lieferung ab einem Kubikmeter bis vor die Haustür."
+  brotkrumen={[{ name: 'Baustoffe', pfad: '/baustoffe' }]}
+  schema={schema}
+>
+  <Seitenkopf
+    titel="Baustoffe ab eigenem Lager"
+    text={`${anzahlBaustoffe} Körnungen und Materialien liegen bei uns auf dem Hof. Was Sie brauchen, kommt mit unseren eigenen Fahrzeugen oder Sie holen es selbst ab.`}
+    bild={kopfBild}
+    brotkrumen={[{ name: 'Baustoffe', pfad: '/baustoffe' }]}
+  />
+
+  {/* ---------- Sortiment ---------- */}
+  <section class="huelle py-20 md:py-28">
+    <div class="max-w-[46rem]">
+      <h2 class="schrift-titel" data-auf>Das Sortiment</h2>
+      <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+        Sechs Bereiche, vom Fundamentkies bis zum Zierschotter fürs Beet.
+        Körnungen, die hier nicht stehen, besorgen wir auf Anfrage.
+      </p>
+    </div>
+
+    <div class="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {
+        baustoffgruppen.map((gruppe, i) => (
+          <article
+            class="flex flex-col rounded-[var(--radius-md)] border border-[var(--linie)] bg-[var(--flaeche-erhoben)] p-7"
+            data-auf
+            style={`--verzug:${i % 3}`}
+          >
+            <Icon
+              name={gruppe.icon}
+              class="size-8 text-signal-600 dark:text-signal-400"
+              aria-hidden="true"
+            />
+            <h3 class="schrift-sub mt-5 text-[1.2rem] text-stark">{gruppe.name}</h3>
+            <p class="mt-3 text-[0.92rem] leading-relaxed text-normal">{gruppe.einleitung}</p>
+
+            <ul class="mt-6 space-y-2 border-t border-[var(--linie)] pt-5">
+              {gruppe.posten.map((posten) => (
+                <li class="flex items-baseline justify-between gap-4 text-[0.9rem]">
+                  <span class="text-stark">
+                    {posten.name}
+                    {posten.hinweis && (
+                      <span class="ml-1.5 text-[0.8rem] text-[var(--text-leise)]">{posten.hinweis}</span>
+                    )}
+                  </span>
+                  {posten.koernung && (
+                    <span class="zahl shrink-0 text-[0.82rem] text-[var(--text-leise)]">{posten.koernung}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="mt-10 max-w-[60ch] leading-relaxed text-normal" data-auf>
+      Preise richten sich nach Menge und Lieferort. Rufen Sie an oder schreiben
+      Sie uns, welche Körnung und wie viel Tonnen Sie brauchen, dann bekommen
+      Sie ein Angebot.
+    </p>
+  </section>
+
+  {/* ---------- Lieferwege ---------- */}
+  <section class="border-y border-[var(--linie)] bg-[var(--flaeche-gesenkt)] py-20 md:py-28">
+    <div class="huelle grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
+      <div>
+        <h2 class="schrift-titel" data-auf>Drei Wege auf Ihre Baustelle</h2>
+        <p class="schrift-lead mt-5 text-normal" data-auf style="--verzug:1">
+          Welcher davon passt, hängt an der Menge und an der Zufahrt. Im Zweifel
+          klären wir das kurz am Telefon.
+        </p>
+
+        <ul class="mt-9 space-y-6">
+          {
+            lieferwege.map((weg, i) => (
+              <li class="flex gap-5" data-auf style={`--verzug:${i + 1}`}>
+                <Icon
+                  name={weg.icon}
+                  class="mt-1 size-7 shrink-0 text-signal-600 dark:text-signal-400"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 class="font-bold text-stark">{weg.titel}</h3>
+                  <p class="mt-1.5 text-[0.95rem] leading-relaxed text-normal">{weg.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+
+        <div class="mt-9 flex flex-wrap gap-3" data-auf style="--verzug:4">
+          <Knopf href="/kontakt" variante="signal" iconRechts="ph:arrow-right-bold">
+            Baustoff anfragen
+          </Knopf>
+          <Knopf href={firma.extern.containerShop} variante="linie" extern icon="ph:arrow-square-out-bold">
+            Online bestellen
+          </Knopf>
+        </div>
+      </div>
+
+      <Bildrahmen bild={lieferBild} format="4/3" sizes="(min-width: 1024px) 50vw, 100vw" />
+    </div>
+  </section>
+
+  {/* ---------- Recyclingbaustoff ---------- */}
+  <section class="bg-navy-950 py-20 text-navy-200 md:py-28">
+    <div class="huelle max-w-[64rem]">
+      <h2 class="schrift-titel text-white" data-auf>Recyclingschotter aus eigener Aufbereitung</h2>
+      <p class="schrift-lead mt-6 text-navy-300" data-auf style="--verzug:1">
+        Der Bauschutt, den wir abholen, wird auf unserer Anlage gebrochen und
+        klassiert. Was dabei entsteht, verkaufen wir als RCL Recyclingschotter
+        in den Körnungen 0/32 und 0/45. Gütegesichert, günstiger als
+        Primärmaterial und ohne neuen Eingriff in eine Kiesgrube.
+      </p>
+      <div class="mt-9" data-auf style="--verzug:2">
+        <Knopf href="/recycling" variante="geist" iconRechts="ph:arrow-right-bold">
+          Wie die Aufbereitung läuft
+        </Knopf>
+      </div>
+    </div>
+  </section>
+
+  {
+    baustofffragen.length > 0 && (
+      <section class="huelle py-20 md:py-28">
+        <Faqliste fragen={baustofffragen} titel="Fragen zu Baustoffen" />
+      </section>
+    )
+  }
+
+  <Aktionsband
+    titel="Baustoff bestellen oder Container anfragen"
+    text="Oft läuft beides auf einer Tour: Container raus, Baustoff rein. Das spart Ihnen eine Anfahrt."
+  />
+</Basis>
