@@ -24,7 +24,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      # Kein `npm ci`: die Sperrdatei entsteht unter Windows und npm laesst
+      # dort die Zusatzpakete weg, die Sharp nur unter Linux braucht
+      # (@emnapi/core, @emnapi/runtime). `npm ci` bricht deswegen ab.
+      - run: npm install --no-audit --no-fund
       # Die Seite liegt unter benutzername.github.io/name-des-repos,
       # deshalb muss der Unterordner vor alle Verweise.
       - run: npm run build:pages -- --basis ${{ github.event.repository.name }}
