@@ -13,6 +13,7 @@
  * Aufruf:
  *   node scripts/pages-bauen.mjs
  *   node scripts/pages-bauen.mjs --basis /name-des-repos
+ *   node scripts/pages-bauen.mjs --ohne-beispiele
  *
  * Die zweite Form ist nötig, wenn die Seite unter
  * benutzername.github.io/name-des-repos liegt und nicht unter einer
@@ -27,6 +28,12 @@ import { extname, join } from 'node:path';
 const API_ORDNER = join('src', 'pages', 'api');
 const API_PARKPLATZ = join('src', '_api-pause');
 const AUSGABE = 'dist';
+
+// Die Pages-Fassung ist die Vorfuehrfassung fuer Termine beim Kunden.
+// Deshalb laufen dort die Beispieleintraege des Pressebereichs mit, auf
+// jeder Karte sichtbar als Beispiel gekennzeichnet. Mit --ohne-beispiele
+// bleibt nur stehen, was wirklich eingetragen ist.
+const beispiele = !process.argv.includes('--ohne-beispiele');
 
 const basisIndex = process.argv.indexOf('--basis');
 let basis = basisIndex > -1 ? (process.argv[basisIndex + 1] ?? '') : '';
@@ -87,7 +94,11 @@ try {
   execFileSync('npx', ['astro', 'build'], {
     stdio: 'inherit',
     shell: process.platform === 'win32',
-    env: { ...process.env, SCHUEMMER_STATISCH: 'ja' },
+    env: {
+      ...process.env,
+      SCHUEMMER_STATISCH: 'ja',
+      ...(beispiele ? { SCHUEMMER_DEMO: 'ja' } : {}),
+    },
   });
 } finally {
   if (apiVorhanden) {
@@ -125,3 +136,9 @@ console.log('');
 console.log('[pages] Fertig. Der Ordner dist/ kann jetzt zu GitHub Pages.');
 console.log('[pages] Achtung: Das Formular verschickt hier nichts über einen Server,');
 console.log('[pages] sondern öffnet das E-Mail-Programm des Besuchers.');
+
+if (beispiele) {
+  console.log('[pages] Der Pressebereich zeigt Beispieleinträge. Jede dieser Karten');
+  console.log('[pages] trägt sichtbar den Hinweis "Beispiel". Ohne sie bauen:');
+  console.log('[pages]   npm run build:pages -- --ohne-beispiele');
+}

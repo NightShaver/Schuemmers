@@ -4,8 +4,8 @@
  * Hier trägt der Betrieb ein, wo über ihn berichtet wurde. Die Liste
  * `pressestimmen` ist bewusst leer, solange nichts vorliegt: die Sektion
  * blendet sich dann auf der veröffentlichten Seite von selbst aus, statt
- * mit Platzhaltern zu füllen. Zum Ansehen im Entwicklungsserver gibt es
- * weiter unten drei Beispieleinträge.
+ * mit Platzhaltern zu füllen. Zum Ansehen gibt es weiter unten vier
+ * Beispieleinträge.
  *
  * So sieht ein Eintrag aus:
  *
@@ -36,54 +36,95 @@ export type Pressestimme = {
   auszug: string;
   link?: string;
   datei?: string;
+  /**
+   * Kennzeichnet einen Beispieleintrag. Solche Karten tragen auf der Seite
+   * sichtbar den Hinweis "Beispiel", damit niemand sie für einen echten
+   * Bericht hält. Echte Einträge setzen dieses Feld nicht.
+   */
+  beispiel?: true;
 };
 
 export const pressestimmen: Pressestimme[] = [];
 
 /**
- * Beispieleinträge, nur zum Ansehen im Entwicklungsserver.
+ * Beispieleinträge für die Vorführung.
  *
- * Sie zeigen die drei möglichen Zustände einer Karte: mit Verweis auf einen
- * Online-Artikel, mit PDF und ganz ohne Verweis. Auf der veröffentlichten
- * Seite tauchen sie nie auf, dafür sorgt `pressestimmenSortiert`. Es kann
- * also nichts Erfundenes online gehen, auch wenn diese Liste stehen bleibt.
+ * Zweck: zeigen, wie der Bereich mit Inhalt aussieht, bevor echte Berichte
+ * vorliegen. Die Quellen sind erfundene Gattungsnamen, keine bestehenden
+ * Zeitungen, und jede Karte trägt sichtbar den Hinweis "Beispiel".
  *
- * Echte Berichte kommen nach `pressestimmen` oben, nicht hierher.
+ * Sichtbar sind sie im Entwicklungsserver und in der Vorführfassung
+ * (`SCHUEMMER_DEMO=ja`, so baut `npm run build:pages`). Im normalen Build
+ * für die echte Domain bleiben sie weg, dafür sorgt `beispieleSichtbar`.
+ *
+ * Echte Berichte kommen nach `pressestimmen` oben, nicht hierher. Sobald
+ * dort der erste Eintrag steht, sollten die Beispiele abgeschaltet werden:
+ * `npm run build:pages -- --ohne-beispiele`.
  */
 const beispielstimmen: Pressestimme[] = [
   {
-    quelle: 'Beispielzeitung',
+    quelle: 'Regionalzeitung (Beispiel)',
     datum: '2026-05-21',
-    titel: 'So sieht ein Eintrag mit Verweis auf den Online-Artikel aus',
+    titel: 'Aus Bauschutt wird wieder Baustoff',
     auszug:
-      'Hier steht das Zitat aus dem Artikel, zwei bis drei Zeilen. Kurz genug, dass man es im Vorbeigehen liest, lang genug, dass es etwas sagt.',
+      'Was auf der Baustelle abgerissen wird, verlässt den Hof an der Albertstraße als Recyclingschotter. Der Weg dahin ist kurz: sortieren, brechen, sieben, prüfen.',
     link: 'https://example.org/',
+    beispiel: true,
   },
   {
-    quelle: 'Beispiel-Wochenblatt',
+    quelle: 'Wochenblatt (Beispiel)',
     datum: '2026-02-08',
-    titel: 'So sieht ein Eintrag mit PDF aus',
+    titel: 'Seit sechzig Jahren am selben Ort',
     auszug:
-      'Wenn der Artikel nicht online steht, legt man das eingescannte PDF nach public/dokumente und trägt den Pfad als datei ein.',
+      'Angefangen hat der Betrieb 1966 als Containerdienst für die Region. Heute stehen Umschlaghalle und Recyclinganlage auf demselben Grundstück.',
     datei: '/dokumente/agb-schuemmer.pdf',
+    beispiel: true,
   },
   {
-    quelle: 'Beispiel-Anzeiger',
-    datum: '2025-09-30',
-    titel: 'So sieht ein Eintrag ganz ohne Verweis aus',
+    quelle: 'Branchenmagazin (Beispiel)',
+    datum: '2025-11-12',
+    titel: 'Fünfzehn Containergrößen für jede Zufahrt',
     auszug:
-      'Ohne link und ohne datei bleibt die Karte stehen, nur der Knopf am unteren Rand fällt weg. Für Erwähnungen, die man nicht verlinken kann.',
+      'Nicht jede Einfahrt trägt einen Abrollcontainer. Wer vorher fragt, bekommt die Größe, die tatsächlich vor das Haus passt.',
+    beispiel: true,
+  },
+  {
+    quelle: 'Lokalanzeiger (Beispiel)',
+    datum: '2025-09-30',
+    titel: 'Entsorgung für die Baustellen der Städteregion',
+    auszug:
+      'Von Eschweiler aus fahren die Lastwagen nach Aachen, Stolberg, Alsdorf und Würselen. Kurze Wege sind hier keine Werbeaussage, sondern Fahrzeit.',
+    beispiel: true,
   },
 ];
 
 /**
- * Neueste zuerst. Im Entwicklungsserver hängen die Beispiele hinten an,
- * damit man das Aussehen prüfen kann, ohne etwas Erfundenes zu
- * veröffentlichen.
+ * Sollen die Beispiele mitlaufen?
+ *
+ * Immer im Entwicklungsserver. Darüber hinaus nur, wenn der Build
+ * ausdrücklich als Vorführfassung läuft. Die Vorführfassung ist zusätzlich
+ * für Suchmaschinen gesperrt, siehe scripts/pages-bauen.mjs.
+ */
+function beispieleSichtbar(): boolean {
+  if (import.meta.env.DEV) return true;
+  return typeof process !== 'undefined' && process.env?.SCHUEMMER_DEMO === 'ja';
+}
+
+/** Trifft auf mindestens eine ausgegebene Karte der Beispielhinweis zu? */
+export function zeigtBeispiele(): boolean {
+  return pressestimmenSortiert().some((stimme) => stimme.beispiel === true);
+}
+
+/**
+ * Neueste zuerst. Beispiele hängen hinten an, damit echte Berichte immer
+ * zuerst stehen, sobald welche eingetragen sind.
  */
 export function pressestimmenSortiert(): Pressestimme[] {
-  const quelle = import.meta.env.DEV ? [...pressestimmen, ...beispielstimmen] : pressestimmen;
-  return [...quelle].sort((a, b) => b.datum.localeCompare(a.datum));
+  const quelle = beispieleSichtbar() ? [...pressestimmen, ...beispielstimmen] : pressestimmen;
+  return [...quelle].sort((a, b) => {
+    if (Boolean(a.beispiel) !== Boolean(b.beispiel)) return a.beispiel ? 1 : -1;
+    return b.datum.localeCompare(a.datum);
+  });
 }
 
 export function datumLesbar(datum: string): string {
