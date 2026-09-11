@@ -91,7 +91,7 @@ const beispielstimmen: Pressestimme[] = [
     beispiel: true,
   },
   {
-    quelle: 'Branchenmagazin (Beispiel)',
+    quelle: 'Fachblatt (Beispiel)',
     datum: '2025-11-12',
     titel: 'Fünfzehn Containergrößen für jede Zufahrt',
     auszug:
