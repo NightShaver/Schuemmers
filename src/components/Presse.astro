@@ -1,6 +1,8 @@
 ---
 import { Icon } from 'astro-icon/components';
+import Bildrahmen from './Bildrahmen.astro';
 import { pressestimmenSortiert, datumLesbar } from '~/lib/daten/presse';
+import { bild } from '~/lib/bilder';
 
 interface Props {
   titel?: string;
@@ -59,6 +61,9 @@ const mitBeispielen = stimmen.some((stimme) => stimme.beispiel === true);
         {stimmen.map((stimme, i) => {
           const ziel = stimme.link ?? stimme.datei;
           const istDatei = !stimme.link && Boolean(stimme.datei);
+          // Vorschaubild der Karte. Fehlt die Kategorie oder liegt dort keine
+          // Datei, bleibt die Karte reiner Text statt eine Luecke zu zeigen.
+          const vorschau = stimme.bildKategorie ? bild(stimme.bildKategorie) : undefined;
           return (
             <li data-auf style={`--verzug:${i % 3}`}>
               <article
@@ -67,6 +72,16 @@ const mitBeispielen = stimmen.some((stimme) => stimme.beispiel === true);
                   stimme.beispiel ? 'border-dashed border-[var(--linie-stark)]' : 'border-[var(--linie)]',
                 ]}
               >
+                {vorschau && (
+                  <Bildrahmen
+                    bild={vorschau}
+                    format="16/9"
+                    breiten={[360, 560, 760]}
+                    sizes="(min-width: 1280px) 22rem, (min-width: 768px) 42vw, 88vw"
+                    class="mb-6"
+                  />
+                )}
+
                 <div class="flex items-baseline justify-between gap-4">
                   <p class="text-[0.82rem] font-bold tracking-wide text-signal-600 uppercase dark:text-signal-400">
                     {stimme.quelle}

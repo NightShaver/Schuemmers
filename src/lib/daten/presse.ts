@@ -18,6 +18,7 @@
  *     'ganzer Absatz, sondern das, was hängen bleibt.',
  *   link: 'https://www.aachener-zeitung.de/...',   // wenn online lesbar
  *   datei: '/dokumente/az-2026-03-14.pdf',         // wenn als PDF vorliegt
+ *   bildKategorie: 'presse',                       // wenn ein Foto dazu soll
  * }
  *
  * `link` und `datei` sind beide freiwillig. Ist keins von beiden gesetzt,
@@ -36,6 +37,13 @@ export type Pressestimme = {
   auszug: string;
   link?: string;
   datei?: string;
+  /**
+   * Kategorie aus src/assets/bilder, aus der das Vorschaubild der Karte
+   * kommt, etwa 'recycling' oder 'gelaende'. Fehlt die Angabe, zeigt die
+   * Karte nur Text. Zeitungsscans gehoeren als eigene Kategorie dorthin,
+   * zum Beispiel src/assets/bilder/presse/.
+   */
+  bildKategorie?: string;
   /**
    * Kennzeichnet einen Beispieleintrag. Solche Karten tragen auf der Seite
    * sichtbar den Hinweis "Beispiel", damit niemand sie für einen echten
@@ -69,6 +77,7 @@ const beispielstimmen: Pressestimme[] = [
     auszug:
       'Was auf der Baustelle abgerissen wird, verlässt den Hof an der Albertstraße als Recyclingschotter. Der Weg dahin ist kurz: sortieren, brechen, sieben, prüfen.',
     link: 'https://example.org/',
+    bildKategorie: 'recycling',
     beispiel: true,
   },
   {
@@ -78,6 +87,7 @@ const beispielstimmen: Pressestimme[] = [
     auszug:
       'Angefangen hat der Betrieb 1966 als Containerdienst für die Region. Heute stehen Umschlaghalle und Recyclinganlage auf demselben Grundstück.',
     datei: '/dokumente/agb-schuemmer.pdf',
+    bildKategorie: 'gelaende',
     beispiel: true,
   },
   {
@@ -86,6 +96,7 @@ const beispielstimmen: Pressestimme[] = [
     titel: 'Fünfzehn Containergrößen für jede Zufahrt',
     auszug:
       'Nicht jede Einfahrt trägt einen Abrollcontainer. Wer vorher fragt, bekommt die Größe, die tatsächlich vor das Haus passt.',
+    bildKategorie: 'fuhrpark',
     beispiel: true,
   },
   {
@@ -94,6 +105,7 @@ const beispielstimmen: Pressestimme[] = [
     titel: 'Entsorgung für die Baustellen der Städteregion',
     auszug:
       'Von Eschweiler aus fahren die Lastwagen nach Aachen, Stolberg, Alsdorf und Würselen. Kurze Wege sind hier keine Werbeaussage, sondern Fahrzeit.',
+    bildKategorie: 'hero',
     beispiel: true,
   },
 ];
